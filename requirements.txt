@@ -1,0 +1,4 @@
+# Copyright 2022 Francis Meyvis (pwsync@mikmak.fun)
+
+# use setup.py
+-e .

@@ -1,0 +1,13 @@
+__pycache__/
+.venv/
+.eggs/
+*.egg-info/
+pwsync.egg-info/
+dist/
+build/
+.coverage
+cov.xml
+tests/pw1.kdbx
+tests/pw2.kdbx
+*.pyc
+version.py

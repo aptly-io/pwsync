@@ -1,0 +1,12 @@
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+# globally disable pylint checks (comma separated)
+# keep TODO's, duplicate-code seems to be the imports ...
+disable=fixme, duplicate-code
+
+# too-many-arguments (increased default 5)
+max-args = 5
+# too-many-instance-attributes (increased default 7)
+max-attributes = 7
