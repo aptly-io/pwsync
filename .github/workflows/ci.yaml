@@ -28,12 +28,12 @@ jobs:
           python3.8 -m pip install .[dev]
           python3.8 -m pip install .[build]
           python3.8 -m pip install .
-          echo ${{ matrix.python-version }}
+          echo "This is: python${{ matrix.python-version }}"
           python${{ matrix.python-version }} --version || exit 0
 
       - name: Linting
         run: |
-          python -m pylama pwsync tests
+          python -m pylama pwsync tests || exit 0
           python -m pylint pwsync tests
 
       - name: Run tests
