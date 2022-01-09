@@ -105,7 +105,7 @@ class KeepassDatabaseClient(PwsDatabaseClient):
             entry.url = "" if item.url is None else item.url
 
         props = entry.custom_properties
-        if item.favorite is None:
+        if not item.favorite:
             if PWS_FAVORITE in props:
                 entry.delete_custom_property(PWS_FAVORITE)
         elif item.favorite != to_bool(props.get(PWS_FAVORITE)):
@@ -183,7 +183,7 @@ class KeepassDatabaseClient(PwsDatabaseClient):
             entry.notes,
             entry.url,
             props.get(PWS_TOTP) if PWS_TOTP in props else None,
-            to_bool(props.get(pws_fav)) if pws_fav in props else None,
+            to_bool(props.get(pws_fav)) if pws_fav in props else False,
             props.get(PWS_ORGANIZATION) if PWS_ORGANIZATION in props else None,
             collections,
             props.get(PWS_SYNC) if PWS_SYNC in props else None,

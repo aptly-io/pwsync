@@ -43,7 +43,7 @@ class PwsItem:
         note: Optional[str] = None,
         url: Optional[str] = None,
         totp: Optional[str] = None,
-        favorite: Optional[bool] = None,
+        favorite: bool = False,
         organization: Optional[str] = None,
         collections: Optional[List[str]] = None,
         sync: Optional[Any] = None,
@@ -115,7 +115,7 @@ class PwsItem:
         return self._fields[TOTP]
 
     @property
-    def favorite(self) -> Optional[bool]:
+    def favorite(self) -> bool:
         """is-favorite getter"""
         return self._fields[FAVORITE]
 

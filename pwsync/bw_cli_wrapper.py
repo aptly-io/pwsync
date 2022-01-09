@@ -83,6 +83,7 @@ def _key2uuid(key: Key) -> str:
 
 
 class BitwardenClientWrapper(PwsDatabaseClient):
+    """Implements the CRUD operation on an online Bitwarden password database,
     using the Bitwarden client command line tool"""
 
     def __init__(
@@ -251,7 +252,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         folder = self._get_object_name(obj.get("folderId"), "folder")
         note = obj.get("notes")
         org = self._get_object_name(obj.get("organizationId"), "organization")
-        fav = obj.get("favorite")
+        fav = obj.get("favorite", False)
 
         collections = list(
             filter(
@@ -379,7 +380,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             "type": USER_TYPE,
             "name": item.title,
             "notes": item.note,
-            "favorite": False if item.favorite is None else item.favorite,
+            "favorite": item.favorite,
             # TODO support "reprompt"?
             "login": login,
             "fields": fields,

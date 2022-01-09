@@ -280,7 +280,7 @@ def test_update_remove_fields(kpc):
         note=None,
         url=None,
         totp=None,
-        favorite=None,
+        favorite=False,
         organization=None,
         collections=None,
         sync=None,
@@ -300,7 +300,7 @@ def test_update_remove_fields(kpc):
     assert updated_item.totp is None
     assert updated_item.organization is None
     assert updated_item.collections is None
-    assert updated_item.favorite is None
+    assert not updated_item.favorite
     assert updated_item.sync is None
     items = kpc.read()
     assert len(items) == 1

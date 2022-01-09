@@ -31,7 +31,7 @@ Key = bytes
 
 def to_bool(value: str) -> bool:
     """interprets given value as true or false"""
-    return value.lower() in ["true", "t", "1", "yes", "y", "on", "pass", "success", "ok", "oke"]
+    return value is not None and value.lower() in ["true", "t", "1", "yes", "y", "on", "pass", "success", "ok", "oke"]
 
 
 class PwsMissingOrganization(Exception):
