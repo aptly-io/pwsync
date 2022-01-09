@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.8"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -39,4 +39,4 @@ jobs:
         env:
           TEST_BW_USERNAME: ${{ secrets.BW_USERNAME }}
           TEST_BW_PASSWORD: ${{ secrets.BW_PASSWORD }}
-        run: python -m pytest --cov=pwsync --cov-report=term tests
+        run: python -m pytest -s -vvv --cov=pwsync --cov-report=term tests
