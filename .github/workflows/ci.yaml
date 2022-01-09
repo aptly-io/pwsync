@@ -21,12 +21,15 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y --upgrade git build-essential python-venv python-dev
+          sudo apt-get install -y --upgrade git build-essential python3.8-venv python3.8-dev
           python --version
-          python -m pip install --upgrade pip setuptools
-          python -m pip install .[dev]
-          python -m pip install .[build]
-          python -m pip install .
+          python3.8 --version
+          python3.8 -m pip install --upgrade pip setuptools
+          python3.8 -m pip install .[dev]
+          python3.8 -m pip install .[build]
+          python3.8 -m pip install .
+          echo ${{ matrix.python-version }}
+          python${{ matrix.python-version }} --version || exit 0
 
       - name: Linting
         run: |
