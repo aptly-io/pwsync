@@ -55,6 +55,8 @@ class PwsItem:
         # all arguments as a dict and still benefit parameter type checking
         self._fields = locals()
         del self._fields["self"]
+        if collections == []:
+            self._fields[COLLECTIONS] = None  # convert [] (empty list) to None
         if collections and not organization:
             raise PwsMissingOrganization("collections require an organization")
         self._mtime = self._fields.pop("mtime")
