@@ -24,6 +24,7 @@ from .common import (
     Key,
     to_bool,
 )
+from .database_cli import PwsDatabaseClient
 from .item import PwsItem
 
 
@@ -31,11 +32,10 @@ def _to_folder(entry: Entry):
     return "/".join(entry.group.path)
 
 
-class KeepassDatabaseClient:
-    """Provide CRUD operation on a Keepass database with the PyKeepass module"""
+class KeepassDatabaseClient(PwsDatabaseClient):
 
     def __init__(self, filename: str, db_password=None):
-        self.logger = getLogger(LOGGER_NAME)
+        super().__init__()
         if not exists(filename):
             self._kp = create_database(filename, db_password)
             self.name = Path(filename).stem

@@ -27,6 +27,7 @@ from .common import (
     PwsUnsupported,
     to_bool,
 )
+from .database_cli import PwsDatabaseClient
 from .item import PwsItem
 
 # observed item types:
@@ -81,8 +82,7 @@ def _key2uuid(key: Key) -> str:
     return str(UUID(bytes=key))
 
 
-class BitwardenClientWrapper:
-    """Provide CRUD operation on an online Bitwarden password database,
+class BitwardenClientWrapper(PwsDatabaseClient):
     using the Bitwarden client command line tool"""
 
     def __init__(
@@ -92,6 +92,7 @@ class BitwardenClientWrapper:
         password: Optional[str] = None,
         ids: Optional[List[str]] = None,
     ):
+        super().__init__()
         if not session:
             session = self._make_session(username, password)
         self.env = dict(os.environ, BW_SESSION=session)

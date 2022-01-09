@@ -121,7 +121,7 @@ def _create_bitwarden_dataset(
     username: Optional[str],
     password: Optional[str],
     query_info: PwsQueryInfo,
-):
+) -> PasswordDataset:
     session = getenv("BW_SESSION", None)
     client = BitwardenClientWrapper(session, username, password, query_info.ids)
     dataset = PasswordDataset(name, query_info, client)
@@ -132,7 +132,7 @@ def _create_keepass_dataset(
     name: str,
     password: Optional[str],
     query_info: PwsQueryInfo,
-):
+) -> PasswordDataset:
     if password is None:
         password = getpass(f"Password for {name}:")
     client = KeepassDatabaseClient(name, password)
@@ -177,9 +177,9 @@ def main():
     # TODO validate the password database soundness before synchronizing
 
     if args.gui:
-        gui_sync(query_info, syncer, args.dry_run)
+        gui_sync(query_info, syncer, args.dry_run, to_dataset)
     else:
-        console_sync(query_info, syncer, args.dry_run)
+        console_sync(query_info, syncer, args.dry_run, to_dataset)
 
 
 if __name__ == "__main__":

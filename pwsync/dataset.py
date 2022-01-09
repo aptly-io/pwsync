@@ -6,7 +6,7 @@ from logging import getLogger
 
 from diffsync import DiffSync
 
-from .common import LOGGER_NAME, PwsQueryInfo
+from .database_cli import PwsDatabaseClient
 from .model import Credential
 
 
@@ -16,7 +16,7 @@ class PasswordDataset(DiffSync):
     top_level = ["credential"]
     credential = Credential
 
-    def __init__(self, name: str, query_info: PwsQueryInfo, client):
+    def __init__(self, name: str, query_info: PwsQueryInfo, client: PwsDatabaseClient):
         super().__init__(name)
         self.logger = getLogger(LOGGER_NAME)
         self.query_info = query_info
