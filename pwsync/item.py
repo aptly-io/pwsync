@@ -39,7 +39,7 @@ class PwsItem:
         title: str,
         name: str,
         secret: str,
-        folder: Optional[str] = None,
+        folder: Optional[str] = None,  # TODO replace default None with empty string ""?
         note: Optional[str] = None,
         url: Optional[str] = None,
         totp: Optional[str] = None,
@@ -76,7 +76,7 @@ class PwsItem:
         setattr(updated, "_key", self.key)
         return updated
 
-    def make_id(self, key_info: PwsQueryInfo):
+    def make_id(self, key_info: PwsQueryInfo) -> str:
         """returns this item's identifying string by concatenating the values of given properties,
         separated by given separator"""
         return key_info.id_sep.join(["" if v is None else v for v in [getattr(self, id) for id in key_info.ids]])

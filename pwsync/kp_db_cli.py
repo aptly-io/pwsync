@@ -11,8 +11,8 @@ from typing import List, Optional
 from uuid import UUID
 
 from pykeepass import PyKeePass, create_database
-from pykeepass.entry import Entry
-from pykeepass.group import Group
+from pykeepass.entry import Entry  # type: ignore
+from pykeepass.group import Group  # type: ignore
 
 from .common import (
     LOGGER_NAME,
@@ -33,6 +33,7 @@ def _to_folder(entry: Entry):
 
 
 class KeepassDatabaseClient(PwsDatabaseClient):
+    """Implements the CRUD operation on a Keepass database with the PyKeepass module"""
 
     def __init__(self, filename: str, db_password=None):
         super().__init__()

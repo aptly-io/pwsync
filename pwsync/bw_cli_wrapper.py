@@ -40,26 +40,27 @@ IDENTITY_TYPE = 4
 LOGIN_SUBTYPE = 0
 
 # bw get template item
-# card_template = {
-#     "cardholderName":"John Doe",
-#     "brand":"visa",
-#     "number":"4242424242424242",
-#     "expMonth":"04",
-#     "expYear":"2023",
-#     "code":"123"}
-# identity_template = {
-#     "title":"Mr",
-#     "firstName":"John",
-#     "middleName":"William",
-#     "lastName":"Doe",
-#     "address1":"123 Any St","address2":"Apt #123","address3":null,
-#     "city":"New York","state":"NY","postalCode":"10001","country":"US",
-#     "company":"Acme Inc.",
-#     "email":"john@company.com",
-#     "phone":"5555551234",
-#     "ssn":"000-123-4567",
-#     "name":"jdoe",
-#     "passportNumber":"US-123456789","licenseNumber":"D123-12-123-12333"}
+# card_template looks like {
+#     "cardholderName" -> "John Doe",
+#     "brand" -> "visa",
+#     "number" -> "4242424242424242",
+#     "expMonth" -> "04",
+#     "expYear" -> "2023",
+#     "code" -> "123"}
+# identity_template looks like {
+#     "title" -> "Mr",
+#     "firstName" -> "John",
+#     "middleName" -> "William",
+#     "lastName" -> "Doe",
+#     "address1" -> "123 Any St","address2" -> "Apt #123","address3":null,
+#     "city" -> "New York","state" -> "NY","postalCode" -> "10001","country" -> "US",
+#     "company" -> "Acme Inc.",
+#     "email" -> "john@company.com",
+#     "phone" -> "5555551234",
+#     "ssn" -> "000-123-4567",
+#     "name" -> "jdoe",
+#     "passportNumber" -> "US-123456789",
+#     "licenseNumber" -> "D123-12-123-12333"}
 
 # The REST API is described here:
 # https://bitwarden.com/help/article/public-api/
@@ -440,7 +441,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         if item.organization != current_item.organization:
             raise PwsUnsupported("unsupported organization update")
             # TODO how to change the organization with bw cli tool?
-            # obj["organizationId"] = self._find_organization_uuid(item.organization)
+            # This does not work: obj["organizationId"] = self._find_organization_uuid(item.organization)
         if (
             isinstance(item.collections, list)
             and isinstance(current_item.collections, list)
@@ -448,6 +449,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         ) or (item.collections != current_item.collections):
             raise PwsUnsupported("unsupported collections update")
             # TODO how to change the collection with bw cli tool?
+            # This does not work:
             # org_uuid = self._find_organization_uuid(item.organization)
             # print(f"old collections: {obj['collectionIds']}")
             # obj["collectionIds"] = (
