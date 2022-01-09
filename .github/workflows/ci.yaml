@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
+        python-version: ["3.8", "3.9"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -22,13 +22,14 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev
+          sudo snap install bw
           python --version
           python -m pip install --upgrade pip setuptools
           python -m pip install .[dev]
           python -m pip install .[build]
           python -m pip install .
 
-      - name: Linting pylama
+      - name: Linting pylama (forced succeed)
         run: python -m pylama pwsync tests || exit 0
 
       - name: Linting pylint
