@@ -130,7 +130,7 @@ class PwsSyncer:
             self.updates.append(PwsDiffElement(add_props, remove_props, from_cred.item, to_cred.item))
         else:
             # to-item is more recent than from-item
-            self.conflicts.append((from_cred.item, to_cred.item))
+            self.conflicts.append(PwsDiffElement(add_props, remove_props, from_cred.item, to_cred.item))
 
     def _print(self, diff_element):
         self._logger.debug("########## dir(diff_element): {type(diff_element)}, {dir(diff_element)}")
