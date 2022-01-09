@@ -4,7 +4,7 @@
 
 """ password sync's entry point"""
 
-from argparse import ArgumentParser
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from getpass import getpass
 from logging import INFO, FileHandler, basicConfig, getLogger
 from os import getenv, path
@@ -22,66 +22,70 @@ from .version import __version__
 
 
 def _parse_command_line():
-    parser = ArgumentParser(description="Synchronise password databases")
+    parser = ArgumentParser(
+        description="Synchronise 2 password databases", formatter_class=ArgumentDefaultsHelpFormatter
+    )
 
     parser.add_argument(
         "--from",
         required=True,
-        help="synchronize from. Use a Keepass database filename or the keyword 'bitwarden'.",
+        help="synchronize from. Specify a Keepass database filename or the keyword 'bitwarden'",
     )
 
     parser.add_argument(
         "--to",
         required=True,
-        help="synchronize to. Use a Keepass database filename or the keyword 'bitwarden'.",
+        help="synchronize to. Specify a Keepass database filename or the keyword 'bitwarden'",
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="emulate and describe the action then quit without modifications.",
+        help="describe the action then quit without modifications",
     )
 
     parser.add_argument(
         "--id",
         default="folder,title",
-        help="ordered, comma separated property list used for identifing database entries",
+        help="an ordered, comma separated property list, "
+        + "used to identify equivalent entries among the from and to password databases",
     )
 
-    parser.add_argument("--id-sep", default=":", help="")
+    parser.add_argument("--id-sep", default=":", help="a separator to separate the id key parts (see --id)")
 
     parser.add_argument(
-        "--sync",
+        "--sync-all",
         action="store_true",
-        help="synchronize only password database entries that have their sync-flag set.",
+        help="synchronize all the password database entries. "
+        + "By default only entries that have their 'pws_sync' flag attribute set, "
+        + "are synchronized; not the whole database",
     )
 
     parser.add_argument(
         "--from-username",
-        help="username to access the 'from' password database. Overrides the env. var. PWS_FROM_USERNAME.",
+        help="the username to access the 'from' password database. Overrides the env. var. PWS_FROM_USERNAME",
     )
 
     parser.add_argument(
         "--from-password",
-        help="password to access the 'from' password database. "
-        + "Overrides the env. var. PWS_FROM_PASSWORD. "
-        + "Warning: unsafe as it could leak out from the process scope. "
-        + "If left empty, it is prompted from the command line.",
+        help="the password to access the 'from' password database. Overrides the env. var. PWS_FROM_PASSWORD. "
+        + "Warning: this is unsafe as command-line options can leak out from the process scope, "
+        + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
     )
 
     parser.add_argument(
-        "--to-username", help="username to access the 'to' password database. Overrides the env. var. PWS_TO_USERNAME"
+        "--to-username",
+        help="the username to access the 'to' password database. Overrides the env. var. PWS_TO_USERNAME",
     )
 
     parser.add_argument(
         "--to-password",
-        help="password to access the 'to' password database. "
-        + "Overwrites the env. var. PWS_TO_PASSWORD. "
-        + "Warning: unsafe as it could leak out from the process scope. "
-        + "If left empty, it is prompted from the command line.",
+        help="password to access the 'to' password database. Overwrites the env. var. PWS_TO_PASSWORD. "
+        + "Warning: this is unsafe as command-line options can leak out from the process scope, "
+        + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
     )
 
-    parser.add_argument("--gui", action="store_true", help="use graphical user interface")
+    parser.add_argument("--gui", action="store_true", help="use a graphical user interface (not implemented)")
 
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
 
@@ -96,6 +100,8 @@ def _parse_command_line():
         setattr(args, "from", getenv("PWS_FROM", None))
     if args.to is None:
         args.to = getenv("PWS_TO", None)
+
+    args.sync = not args.sync_all
 
     if args.from_username is None:
         args.from_username = getenv("PWS_FROM_USERNAME", None)
