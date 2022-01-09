@@ -23,17 +23,20 @@ class PasswordDataset(DiffSync):
         self._query_info = query_info
         self.client = client
 
-    def _validate(self, item):
+    def _validate(self, item) -> bool:
         for prop in set(self._query_info.ids + [NAME]) - set([FOLDER]):
             if not getattr(item, prop):
                 self._logger.error("item (%s) has empty key_id (%s)", item, prop)
+                return False
+        return True
 
     def load(self):
 
         for item in self.client.read(None, self._query_info.sync):
 
-            # TODO move validation elsewhere, add proper logging
-            self._validate(item)
+            # TODO move validation elsewhere
+            if not self._validate(item):
+                continue
 
             cred = Credential(
                 id=item.make_id(self._query_info),
