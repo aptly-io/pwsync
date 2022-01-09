@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -21,24 +21,21 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y --upgrade git build-essential python3.8-venv python3.8-dev
+          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev
           python --version
-          python3.8 --version
-          python3.8 -m pip install --upgrade pip setuptools
-          python3.8 -m pip install .[dev]
-          python3.8 -m pip install .[build]
-          python3.8 -m pip install .
-          echo "This is: python${{ matrix.python-version }}"
-          python${{ matrix.python-version }} --version || exit 0
+          python -m pip install --upgrade pip setuptools
+          python -m pip install .[dev]
+          python -m pip install .[build]
+          python -m pip install .
 
-      - name: Linting
-        run: |
-          python -m pylama pwsync tests || exit 0
-          python -m pylint pwsync tests
+      - name: Linting pylama
+        run: python -m pylama pwsync tests || exit 0
+
+      - name: Linting pylint
+        run: python -m pylint pwsync tests
 
       - name: Run tests
         env:
-          BW_USERNAME: ${{ secrets.BW_USERNAME }}
-          BW_PASSWORD: ${{ secrets.BW_PASSWORD }}
-        run: |
-          python -m pytest --cov=pwsync --cov-report=term tests
+          TEST_BW_USERNAME: ${{ secrets.BW_USERNAME }}
+          TEST_BW_PASSWORD: ${{ secrets.BW_PASSWORD }}
+        run: python -m pytest --cov=pwsync --cov-report=term tests
