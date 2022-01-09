@@ -36,6 +36,7 @@ class KeepassDatabaseClient(PwsDatabaseClient):
 
     def __init__(self, filename: str, db_password=None):
         super().__init__()
+        self._logger = getLogger(LOGGER_NAME)
         if not exists(filename):
             self._kp = create_database(filename, db_password)
             self.name = Path(filename).stem
@@ -168,8 +169,8 @@ class KeepassDatabaseClient(PwsDatabaseClient):
                 prop_value = props.get(PWS_COLLECTIONS)
                 collections = loads(prop_value)
             except JSONDecodeError as err:
-                self.logger.error("Failed json.loads(%s) (%s)", prop_value, PWS_COLLECTIONS)
-                self.logger.error("Failed json.loads: %s", err)
+                self._logger.error("Failed json.loads(%s) (%s)", prop_value, PWS_COLLECTIONS)
+                self._logger.error("Failed json.loads: %s", err)
                 collections = None
         else:
             collections = None

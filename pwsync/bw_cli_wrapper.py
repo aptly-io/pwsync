@@ -95,16 +95,16 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         super().__init__()
         if not session:
             session = self._make_session(username, password)
-        self.env = dict(os.environ, BW_SESSION=session)
-        self.key_ids = [] if ids is None else ids
-        self.log = getLogger(LOGGER_NAME)
+        self._env = dict(os.environ, BW_SESSION=session)
+        self._key_ids = [] if ids is None else ids
+        self._logger = getLogger(LOGGER_NAME)
 
     def _check_output(
         self,
         cmd: List[str],
         input_value=None,
     ):
-        result_json = check_output(cmd, input=input_value, env=self.env)
+        result_json = check_output(cmd, input=input_value, env=self._env)
         return json.loads(result_json)
 
     def _make_session(
@@ -128,7 +128,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         match: Optional[str] = None,
         organization_uuid: Optional[str] = None,
     ):
-        check_call(["bw", "sync", "--quiet"], env=self.env)
+        check_call(["bw", "sync", "--quiet"], env=self._env)
         if match:
             cmd = ["bw", "--raw", "list", kind, "--search", match]
         else:
@@ -143,7 +143,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         uuid: str,
         kind: str = "item",
     ) -> Optional[Dict]:
-        check_call(["bw", "sync", "--quiet"], env=self.env)
+        check_call(["bw", "sync", "--quiet"], env=self._env)
         obj = self._check_output(["bw", "--raw", "get", kind, uuid])
         return obj
 
@@ -194,7 +194,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         cmd = ["bw", "delete", kind, uuid]
         if organization_uuid:
             cmd += ["--organizationid", organization_uuid]
-        check_call(cmd, env=self.env)
+        check_call(cmd, env=self._env)
 
     def _find_uuid(
         self,
@@ -300,9 +300,9 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         self,
         new_item: PwsItem,
     ):
-        use_folder = "folder" in self.key_ids
-        use_title = "title" in self.key_ids
-        use_name = "name" in self.key_ids
+        use_folder = "folder" in self._key_ids
+        use_title = "title" in self._key_ids
+        use_name = "name" in self._key_ids
 
         cmd = ["bw", "--raw", "list", "items", "--search"]
         cmd.append(new_item.title if use_title else new_item.name)
@@ -323,7 +323,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
                 old_item_folder_name = self._get_object_name(old_item.get("folderId"), kind="folder")
                 if new_item.folder == old_item_folder_name:
                     match_cnt += 1
-            if match_cnt == len(self.key_ids):
+            if match_cnt == len(self._key_ids):
                 raise PwsDuplicate()
 
     def logout(self):
