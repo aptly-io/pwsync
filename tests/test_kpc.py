@@ -2,13 +2,13 @@
 
 """KeepassDatabaseClient tests"""
 
-# Test the keepass database client
-# pytest -s --cov=pwsync --cov-report=xml tests
+# pylint: disable=missing-function-docstring
 
 import uuid
 from os import remove
 
 import pytest
+
 from pwsync import KeepassDatabaseClient, PwsItem
 
 KP1_PW = "pw"
@@ -35,7 +35,7 @@ def test_create_empty_folder(kpc):
     secret = "secret"
     folder = ""
     item = kpc.create(PwsItem(title, name, secret, folder))
-    assert item.folder == None
+    assert item.folder is None
 
 
 def test_create_root_folder(kpc):
@@ -44,7 +44,7 @@ def test_create_root_folder(kpc):
     secret = "secret"
     folder = "/"
     item = kpc.create(PwsItem(title, name, secret, folder))
-    assert item.folder == None
+    assert item.folder is None
 
 
 def test_create_none_folder(kpc):
@@ -53,23 +53,23 @@ def test_create_none_folder(kpc):
     secret = "secret"
     folder = None
     item = kpc.create(PwsItem(title, name, secret, folder))
-    assert item.folder == None
+    assert item.folder is None
 
 
 def test_create_only_title_name_secret(kpc):
     title = "title"
     name = "name"
     secret = "secret"
-    i = kpc.create(PwsItem(title, name, secret))
-    assert title == i.title
-    assert name == i.name
-    assert secret == i.secret
-    assert i.note is None
-    assert i.url is None
-    assert i.folder == None
+    item = kpc.create(PwsItem(title, name, secret))
+    assert title == item.title
+    assert name == item.name
+    assert secret == item.secret
+    assert item.note is None
+    assert item.url is None
+    assert item.folder is None
     assert len(kpc.read()) == 1
-    assert i == kpc.read()[0]
-    assert i == kpc.read(i.key)[0]
+    assert item == kpc.read()[0]
+    assert item == kpc.read(item.key)[0]
 
 
 def test_create_only_title_name_secret_path(kpc):
@@ -171,7 +171,7 @@ def test_read_one_only_title_name_secret(kpc):
     assert title == read_item.title
     assert name == read_item.name
     assert secret == read_item.secret
-    assert read_item.folder == None
+    assert read_item.folder is None
     assert read_item.note is None
     assert read_item.url is None
     assert read_item.totp is None
@@ -280,7 +280,7 @@ def test_update_remove_fields(kpc):
         note=None,
         url=None,
         totp=None,
-        favorite=None,
+        favorite=False,
         organization=None,
         collections=None,
         sync=None,
@@ -300,7 +300,7 @@ def test_update_remove_fields(kpc):
     assert updated_item.totp is None
     assert updated_item.organization is None
     assert updated_item.collections is None
-    assert updated_item.favorite is None
+    assert not updated_item.favorite
     assert updated_item.sync is None
     items = kpc.read()
     assert len(items) == 1
@@ -368,7 +368,7 @@ def test_delete(kpc):
     assert len(kpc.read()) == 0
     assert title == deleted_item.title
     assert name == deleted_item.name
-    assert deleted_item.folder == None
+    assert deleted_item.folder is None
 
 
 def test_delete_wrong_uuid(kpc):

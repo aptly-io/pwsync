@@ -11,3 +11,5 @@ tests/pw1.kdbx
 tests/pw2.kdbx
 *.pyc
 version.py
+*.log
+.mypy_cache/

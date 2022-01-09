@@ -39,11 +39,11 @@ class PwsItem:
         title: str,
         name: str,
         secret: str,
-        folder: Optional[str] = None,
+        folder: Optional[str] = None,  # TODO replace default None with empty string ""?
         note: Optional[str] = None,
         url: Optional[str] = None,
         totp: Optional[str] = None,
-        favorite: Optional[bool] = None,
+        favorite: bool = False,
         organization: Optional[str] = None,
         collections: Optional[List[str]] = None,
         sync: Optional[Any] = None,
@@ -55,6 +55,8 @@ class PwsItem:
         # all arguments as a dict and still benefit parameter type checking
         self._fields = locals()
         del self._fields["self"]
+        if collections == []:
+            self._fields[COLLECTIONS] = None  # convert [] (empty list) to None
         if collections and not organization:
             raise PwsMissingOrganization("collections require an organization")
         self._mtime = self._fields.pop("mtime")
@@ -74,7 +76,7 @@ class PwsItem:
         setattr(updated, "_key", self.key)
         return updated
 
-    def make_id(self, key_info: PwsQueryInfo):
+    def make_id(self, key_info: PwsQueryInfo) -> str:
         """returns this item's identifying string by concatenating the values of given properties,
         separated by given separator"""
         return key_info.id_sep.join(["" if v is None else v for v in [getattr(self, id) for id in key_info.ids]])
@@ -115,7 +117,7 @@ class PwsItem:
         return self._fields[TOTP]
 
     @property
-    def favorite(self) -> Optional[bool]:
+    def favorite(self) -> bool:
         """is-favorite getter"""
         return self._fields[FAVORITE]
 

@@ -10,3 +10,5 @@ disable=fixme, duplicate-code
 max-args = 5
 # too-many-instance-attributes (increased default 7)
 max-attributes = 7
+
+fail-under = 9.8

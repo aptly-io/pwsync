@@ -11,8 +11,8 @@ from typing import List, Optional
 from uuid import UUID
 
 from pykeepass import PyKeePass, create_database
-from pykeepass.entry import Entry
-from pykeepass.group import Group
+from pykeepass.entry import Entry  # type: ignore
+from pykeepass.group import Group  # type: ignore
 
 from .common import (
     LOGGER_NAME,
@@ -24,6 +24,7 @@ from .common import (
     Key,
     to_bool,
 )
+from .database_cli import PwsDatabaseClient
 from .item import PwsItem
 
 
@@ -31,11 +32,12 @@ def _to_folder(entry: Entry):
     return "/".join(entry.group.path)
 
 
-class KeepassDatabaseClient:
-    """Provide CRUD operation on a Keepass database with the PyKeepass module"""
+class KeepassDatabaseClient(PwsDatabaseClient):
+    """Implements the CRUD operation on a Keepass database with the PyKeepass module"""
 
     def __init__(self, filename: str, db_password=None):
-        self.logger = getLogger(LOGGER_NAME)
+        super().__init__()
+        self._logger = getLogger(LOGGER_NAME)
         if not exists(filename):
             self._kp = create_database(filename, db_password)
             self.name = Path(filename).stem
@@ -104,7 +106,7 @@ class KeepassDatabaseClient:
             entry.url = "" if item.url is None else item.url
 
         props = entry.custom_properties
-        if item.favorite is None:
+        if not item.favorite:
             if PWS_FAVORITE in props:
                 entry.delete_custom_property(PWS_FAVORITE)
         elif item.favorite != to_bool(props.get(PWS_FAVORITE)):
@@ -168,8 +170,8 @@ class KeepassDatabaseClient:
                 prop_value = props.get(PWS_COLLECTIONS)
                 collections = loads(prop_value)
             except JSONDecodeError as err:
-                self.logger.error("Failed json.loads(%s) (%s)", prop_value, PWS_COLLECTIONS)
-                self.logger.error("Failed json.loads: %s", err)
+                self._logger.error("Failed json.loads(%s) (%s)", prop_value, PWS_COLLECTIONS)
+                self._logger.error("Failed json.loads: %s", err)
                 collections = None
         else:
             collections = None
@@ -182,7 +184,7 @@ class KeepassDatabaseClient:
             entry.notes,
             entry.url,
             props.get(PWS_TOTP) if PWS_TOTP in props else None,
-            to_bool(props.get(pws_fav)) if pws_fav in props else None,
+            to_bool(props.get(pws_fav)) if pws_fav in props else False,
             props.get(PWS_ORGANIZATION) if PWS_ORGANIZATION in props else None,
             collections,
             props.get(PWS_SYNC) if PWS_SYNC in props else None,

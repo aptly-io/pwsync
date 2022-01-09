@@ -3,6 +3,7 @@
 """PwsItem tests"""
 
 import pytest
+
 from pwsync import PwsItem, PwsMissingOrganization
 from pwsync.common import PwsQueryInfo
 

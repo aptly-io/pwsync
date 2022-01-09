@@ -2,26 +2,25 @@
 
 """test synchronization between Keepass databases"""
 
+# pylint: disable=missing-function-docstring
+
 from datetime import datetime, timedelta
 from logging import getLogger
 from os import remove
 
 import pytest
-from pwsync import KeepassDatabaseClient, PasswordDataset, PwsItem, PwsSyncer
-from pwsync.common import PwsQueryInfo
-
-# from pwsync.common import SECRET
 from pytz import UTC
 
-from pwsync.common import LOGGER_NAME
+from pwsync import KeepassDatabaseClient, PasswordDataset, PwsItem, PwsSyncer
+from pwsync.common import LOGGER_NAME, PwsQueryInfo
 
 # TODO add test related to org/organization and fav/favority not working properly
 
 # comparing 2 kp databases
-kp1_pw = "pw"
-kp1_filename = "tests/pw1.kdbx"
-kp2_pw = kp1_pw
-kp2_filename = "tests/pw2.kdbx"
+KP1_PW = "pw"
+KP1_FILENAME = "tests/pw1.kdbx"
+KP2_PW = KP1_PW
+KP2_FILENAME = "tests/pw2.kdbx"
 
 
 TITLE = "title"
@@ -39,10 +38,10 @@ LOGGER = getLogger(LOGGER_NAME + "-test")
 def _cli1():
     LOGGER.info("Setup cli1")
     try:
-        remove(kp1_filename)
+        remove(KP1_FILENAME)
     except FileNotFoundError:
         pass  # maybe file did not exist
-    cli = KeepassDatabaseClient(kp1_filename, kp1_pw)
+    cli = KeepassDatabaseClient(KP1_FILENAME, KP1_PW)
     yield cli
     LOGGER.info("Teardown cli1")
 
@@ -50,7 +49,7 @@ def _cli1():
 @pytest.fixture(name="ds1")
 def _ds1(cli1):
     LOGGER.info("Setup ds1")
-    yield PasswordDataset(kp1_filename, QUERY_INFO, cli1)
+    yield PasswordDataset(KP1_FILENAME, QUERY_INFO, cli1)
     LOGGER.info("Teardown ds1")
 
 
@@ -58,10 +57,10 @@ def _ds1(cli1):
 def _cli2():
     LOGGER.info("Setup cli2")
     try:
-        remove(kp2_filename)
+        remove(KP2_FILENAME)
     except FileNotFoundError:
         pass  # maybe file did not exist
-    cli = KeepassDatabaseClient(kp2_filename, kp2_pw)
+    cli = KeepassDatabaseClient(KP2_FILENAME, KP2_PW)
     yield cli
     LOGGER.info("Teardown cli2")
 
@@ -69,7 +68,7 @@ def _cli2():
 @pytest.fixture(name="ds2")
 def _ds2(cli2):
     LOGGER.info("Setup ds2")
-    yield PasswordDataset(kp1_filename, QUERY_INFO, cli2)
+    yield PasswordDataset(KP1_FILENAME, QUERY_INFO, cli2)
     LOGGER.info("Teardown ds2")
 
 

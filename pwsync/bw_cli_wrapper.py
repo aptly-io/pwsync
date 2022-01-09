@@ -27,6 +27,7 @@ from .common import (
     PwsUnsupported,
     to_bool,
 )
+from .database_cli import PwsDatabaseClient
 from .item import PwsItem
 
 # observed item types:
@@ -39,26 +40,27 @@ IDENTITY_TYPE = 4
 LOGIN_SUBTYPE = 0
 
 # bw get template item
-# card_template = {
-#     "cardholderName":"John Doe",
-#     "brand":"visa",
-#     "number":"4242424242424242",
-#     "expMonth":"04",
-#     "expYear":"2023",
-#     "code":"123"}
-# identity_template = {
-#     "title":"Mr",
-#     "firstName":"John",
-#     "middleName":"William",
-#     "lastName":"Doe",
-#     "address1":"123 Any St","address2":"Apt #123","address3":null,
-#     "city":"New York","state":"NY","postalCode":"10001","country":"US",
-#     "company":"Acme Inc.",
-#     "email":"john@company.com",
-#     "phone":"5555551234",
-#     "ssn":"000-123-4567",
-#     "name":"jdoe",
-#     "passportNumber":"US-123456789","licenseNumber":"D123-12-123-12333"}
+# card_template looks like {
+#     "cardholderName" -> "John Doe",
+#     "brand" -> "visa",
+#     "number" -> "4242424242424242",
+#     "expMonth" -> "04",
+#     "expYear" -> "2023",
+#     "code" -> "123"}
+# identity_template looks like {
+#     "title" -> "Mr",
+#     "firstName" -> "John",
+#     "middleName" -> "William",
+#     "lastName" -> "Doe",
+#     "address1" -> "123 Any St","address2" -> "Apt #123","address3":null,
+#     "city" -> "New York","state" -> "NY","postalCode" -> "10001","country" -> "US",
+#     "company" -> "Acme Inc.",
+#     "email" -> "john@company.com",
+#     "phone" -> "5555551234",
+#     "ssn" -> "000-123-4567",
+#     "name" -> "jdoe",
+#     "passportNumber" -> "US-123456789",
+#     "licenseNumber" -> "D123-12-123-12333"}
 
 # The REST API is described here:
 # https://bitwarden.com/help/article/public-api/
@@ -81,8 +83,8 @@ def _key2uuid(key: Key) -> str:
     return str(UUID(bytes=key))
 
 
-class BitwardenClientWrapper:
-    """Provide CRUD operation on an online Bitwarden password database,
+class BitwardenClientWrapper(PwsDatabaseClient):
+    """Implements the CRUD operation on an online Bitwarden password database,
     using the Bitwarden client command line tool"""
 
     def __init__(
@@ -92,18 +94,19 @@ class BitwardenClientWrapper:
         password: Optional[str] = None,
         ids: Optional[List[str]] = None,
     ):
+        super().__init__()
         if not session:
             session = self._make_session(username, password)
-        self.env = dict(os.environ, BW_SESSION=session)
-        self.key_ids = [] if ids is None else ids
-        self.log = getLogger(LOGGER_NAME)
+        self._env = dict(os.environ, BW_SESSION=session)
+        self._key_ids = [] if ids is None else ids
+        self._logger = getLogger(LOGGER_NAME)
 
     def _check_output(
         self,
         cmd: List[str],
         input_value=None,
     ):
-        result_json = check_output(cmd, input=input_value, env=self.env)
+        result_json = check_output(cmd, input=input_value, env=self._env)
         return json.loads(result_json)
 
     def _make_session(
@@ -127,7 +130,7 @@ class BitwardenClientWrapper:
         match: Optional[str] = None,
         organization_uuid: Optional[str] = None,
     ):
-        check_call(["bw", "sync", "--quiet"], env=self.env)
+        check_call(["bw", "sync", "--quiet"], env=self._env)
         if match:
             cmd = ["bw", "--raw", "list", kind, "--search", match]
         else:
@@ -142,7 +145,7 @@ class BitwardenClientWrapper:
         uuid: str,
         kind: str = "item",
     ) -> Optional[Dict]:
-        check_call(["bw", "sync", "--quiet"], env=self.env)
+        check_call(["bw", "sync", "--quiet"], env=self._env)
         obj = self._check_output(["bw", "--raw", "get", kind, uuid])
         return obj
 
@@ -193,7 +196,7 @@ class BitwardenClientWrapper:
         cmd = ["bw", "delete", kind, uuid]
         if organization_uuid:
             cmd += ["--organizationid", organization_uuid]
-        check_call(cmd, env=self.env)
+        check_call(cmd, env=self._env)
 
     def _find_uuid(
         self,
@@ -250,7 +253,7 @@ class BitwardenClientWrapper:
         folder = self._get_object_name(obj.get("folderId"), "folder")
         note = obj.get("notes")
         org = self._get_object_name(obj.get("organizationId"), "organization")
-        fav = obj.get("favorite")
+        fav = obj.get("favorite", False)
 
         collections = list(
             filter(
@@ -299,9 +302,9 @@ class BitwardenClientWrapper:
         self,
         new_item: PwsItem,
     ):
-        use_folder = "folder" in self.key_ids
-        use_title = "title" in self.key_ids
-        use_name = "name" in self.key_ids
+        use_folder = "folder" in self._key_ids
+        use_title = "title" in self._key_ids
+        use_name = "name" in self._key_ids
 
         cmd = ["bw", "--raw", "list", "items", "--search"]
         cmd.append(new_item.title if use_title else new_item.name)
@@ -322,7 +325,7 @@ class BitwardenClientWrapper:
                 old_item_folder_name = self._get_object_name(old_item.get("folderId"), kind="folder")
                 if new_item.folder == old_item_folder_name:
                     match_cnt += 1
-            if match_cnt == len(self.key_ids):
+            if match_cnt == len(self._key_ids):
                 raise PwsDuplicate()
 
     def logout(self):
@@ -378,7 +381,7 @@ class BitwardenClientWrapper:
             "type": USER_TYPE,
             "name": item.title,
             "notes": item.note,
-            "favorite": False if item.favorite is None else item.favorite,
+            "favorite": item.favorite,
             # TODO support "reprompt"?
             "login": login,
             "fields": fields,
@@ -438,7 +441,7 @@ class BitwardenClientWrapper:
         if item.organization != current_item.organization:
             raise PwsUnsupported("unsupported organization update")
             # TODO how to change the organization with bw cli tool?
-            # obj["organizationId"] = self._find_organization_uuid(item.organization)
+            # This does not work: obj["organizationId"] = self._find_organization_uuid(item.organization)
         if (
             isinstance(item.collections, list)
             and isinstance(current_item.collections, list)
@@ -446,6 +449,7 @@ class BitwardenClientWrapper:
         ) or (item.collections != current_item.collections):
             raise PwsUnsupported("unsupported collections update")
             # TODO how to change the collection with bw cli tool?
+            # This does not work:
             # org_uuid = self._find_organization_uuid(item.organization)
             # print(f"old collections: {obj['collectionIds']}")
             # obj["collectionIds"] = (

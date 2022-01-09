@@ -27,6 +27,8 @@ from .common import (
     PwsQueryInfo,
     PwsUnsupported,
 )
+from .database_cli import PwsDatabaseClient
+from .dataset import PasswordDataset
 from .item import PwsItem
 from .sync import PwsDiffElement, PwsSyncer
 
@@ -163,12 +165,25 @@ def _sync_prompt(kind: str):
     )
 
 
-def _sync_element(kind: str, element: PwsDiffElement):
-    # TODO implement
-    print(f"TODO implement synchronization kind: {kind}, element: {element}")
+def _sync_element(kind: str, element: PwsDiffElement, to_db: PwsDatabaseClient):
+    if kind == "update":
+        to_update = element.add_props & element.remove_props
+        changes = {k: getattr(element.from_item, k) for k in to_update | element.add_props}
+        # changes.update({k: None for k in element.remove_props})
+        update_item = element.to_item.update(**changes)
+        item = to_db.update(element.to_item.key, update_item)
+        print(f"update: {item}")
+    elif kind == "create":
+        item = to_db.create(element.from_item)
+        print(f"created: {item}")
+    elif kind == "delete":
+        item = to_db.delete(element.to_item.key)
+        print(f"deleted: {item}")
+    else:
+        raise PwsUnsupported(f"_sync_element({kind})")
 
 
-def _sync_section(kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, dry_run: bool):
+def _sync_section(kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, dry_run: bool, to_dataset: PasswordDataset):
     def _get_key_using_from_item(diff_element: PwsDiffElement):
         return diff_element.from_item.make_id(query_info) if diff_element.from_item else ""
 
@@ -214,15 +229,15 @@ def _sync_section(kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, dry_ru
             if answer == "s":
                 continue
             if answer == "a":
-                _sync_element(kind, element)
+                _sync_element(kind, element, to_dataset.client)
 
 
-def console_sync(query_info: PwsQueryInfo, syncer: PwsSyncer, dry_run: bool):
+def console_sync(query_info: PwsQueryInfo, syncer: PwsSyncer, dry_run: bool, to_dataset: PasswordDataset):
     """synchronize with an interactive console"""
 
-    _sync_section("conflict", query_info, syncer, dry_run)
-    _sync_section("update", query_info, syncer, dry_run)
-    _sync_section("create", query_info, syncer, dry_run)
-    _sync_section("delete", query_info, syncer, dry_run)
-    _sync_section("skipped", query_info, syncer, dry_run)
-    _sync_section("unchanged", query_info, syncer, dry_run)
+    _sync_section("conflict", query_info, syncer, dry_run, to_dataset)
+    _sync_section("update", query_info, syncer, dry_run, to_dataset)
+    _sync_section("create", query_info, syncer, dry_run, to_dataset)
+    _sync_section("delete", query_info, syncer, dry_run, to_dataset)
+    _sync_section("skipped", query_info, syncer, dry_run, to_dataset)
+    _sync_section("unchanged", query_info, syncer, dry_run, to_dataset)
