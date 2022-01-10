@@ -28,6 +28,9 @@ jobs:
           python -m pip install .[dev]
           python -m pip install .[build]
           python -m pip install .
+          echo "CWD: $PWD"
+          mkdir bw-data
+          ls -al
 
       - name: Linting pylama (forced succeed)
         run: python -m pylama pwsync tests || exit 0
