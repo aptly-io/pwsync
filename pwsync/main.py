@@ -5,6 +5,7 @@
 """ password sync's entry point"""
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from dataclasses import dataclass
 from getpass import getpass
 from logging import INFO, FileHandler, basicConfig, getLogger
 from os import getenv, path
@@ -21,9 +22,16 @@ from .sync import PwsSyncer
 from .version import __version__
 
 
+@dataclass
+class _AccessInfo:
+    identification: str = ""
+    secret: str = ""
+    master_password: str = ""
+
+
 def _parse_command_line():
     parser = ArgumentParser(
-        description="Synchronise 2 password databases", formatter_class=ArgumentDefaultsHelpFormatter
+        description="Synchronise 'from' a password databases 'to' another", formatter_class=ArgumentDefaultsHelpFormatter
     )
 
     parser.add_argument(
@@ -35,7 +43,8 @@ def _parse_command_line():
     parser.add_argument(
         "--to",
         required=True,
-        help="synchronize to. Specify a Keepass database filename or the keyword 'bitwarden'",
+        help="synchronize to. Only this might be modified (take a backup?). "
+        + "Specify a Keepass database filename or the keyword 'bitwarden'",
     )
 
     parser.add_argument(
@@ -63,24 +72,50 @@ def _parse_command_line():
 
     parser.add_argument(
         "--from-username",
-        help="the username to access the 'from' password database. Overrides the env. var. PWS_FROM_USERNAME",
+        help="the identification to access the 'from' password database. "
+        + "In case of Bitwarden, this is the client-id. "
+        + "Overrides the env. var. PWS_FROM_USERNAME. "
+        + "If left empty, it is prompted for on the command line",
     )
 
     parser.add_argument(
-        "--from-password",
-        help="the password to access the 'from' password database. Overrides the env. var. PWS_FROM_PASSWORD. "
+        "--from-secret",
+        help="the secret corresponding to the identification (from-username) to access the 'from' password database. "
+        + "In case of Bitwarden, this is the client-secret. "
+        + "Overrides the env. var. PWS_FROM_SECRET. "
+        + "Warning: this is unsafe as command-line options can leak out from the process scope, "
+        + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
+    )
+
+    parser.add_argument(
+        "--from-master-password",
+        help="the password to unlock or decrypt the 'from' password database. "
+        + "Overrides the env. var. PWS_FROM_MASTER_PASSWORD. "
         + "Warning: this is unsafe as command-line options can leak out from the process scope, "
         + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
     )
 
     parser.add_argument(
         "--to-username",
-        help="the username to access the 'to' password database. Overrides the env. var. PWS_TO_USERNAME",
+        help="the identification to access the 'to' password database. "
+        + "In case of Bitwarden, this is the client-id. "
+        + "Overrides the env. var. PWS_TO_USERNAME. "
+        + "If left empty, it is prompted for on the command line",
     )
 
     parser.add_argument(
-        "--to-password",
-        help="password to access the 'to' password database. Overwrites the env. var. PWS_TO_PASSWORD. "
+        "--to-secret",
+        help="the secret corresponding to the identification (to-username) to access the 'to' password database. "
+        + "In case of Bitwarden, this is the client-secret. "
+        + "Overrides the env. var. PWS_TO_SECRET. "
+        + "Warning: this is unsafe as command-line options can leak out from the process scope, "
+        + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
+    )
+
+    parser.add_argument(
+        "--to-master-password",
+        help="the password to unlock or decrypt the 'to' password database. "
+        + "Overrides the env. var. PWS_TO_MASTER_PASSWORD. "
         + "Warning: this is unsafe as command-line options can leak out from the process scope, "
         + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
     )
@@ -105,12 +140,16 @@ def _parse_command_line():
 
     if args.from_username is None:
         args.from_username = getenv("PWS_FROM_USERNAME", None)
-    if args.from_password is None:
-        args.from_password = getenv("PWS_FROM_PASSWORD", None)
+    if args.from_secret is None:
+        args.from_secret = getenv("PWS_FROM_SECRET", None)
+    if args.from_master_password is None:
+        args.from_master_password = getenv("PWS_FROM_MASTER_PASSWORD", None)
     if args.to_username is None:
         args.to_username = getenv("PWS_TO_USERNAME", None)
-    if args.to_password is None:
-        args.to_password = getenv("PWS_TO_PASSWORD", None)
+    if args.to_secret is None:
+        args.to_secret = getenv("PWS_TO_SECRET", None)
+    if args.to_master_password is None:
+        args.to_master_password = getenv("PWS_TO_MASTER_PASSWORD", None)
     getLogger(LOGGER_NAME).info(args)
 
     return args
@@ -118,20 +157,18 @@ def _parse_command_line():
 
 def _create_bitwarden_dataset(
     name: str,
-    username: Optional[str],
-    password: Optional[str],
     query_info: PwsQueryInfo,
+    access: _AccessInfo,
 ) -> PasswordDataset:
-    session = getenv("BW_SESSION", None)
-    client = BitwardenClientWrapper(session, username, password, query_info.ids)
+    client = BitwardenClientWrapper(access.identification, access.secret, access.master_password, query_info.ids)
     dataset = PasswordDataset(name, query_info, client)
     return dataset
 
 
 def _create_keepass_dataset(
     name: str,
-    password: Optional[str],
     query_info: PwsQueryInfo,
+    password: Optional[str] = None,
 ) -> PasswordDataset:
     if password is None:
         password = getpass(f"Password for {name}:")
@@ -144,13 +181,12 @@ def _open_password_db(
     query_info: PwsQueryInfo,
     position: str,
     name: str,
-    username: Optional[str],
-    password: Optional[str],
+    access: _AccessInfo,
 ):
     if name.lower() in ["bitwarden", "bw"]:
-        return _create_bitwarden_dataset(position + name.lower(), username, password, query_info)
+        return _create_bitwarden_dataset(position + name.lower(), query_info, access)
     if path.exists(name):
-        return _create_keepass_dataset(name, password, query_info)
+        return _create_keepass_dataset(name, query_info, access.master_password)
     raise PwsNotFound(name)
 
 
@@ -169,8 +205,10 @@ def main():
 
     query_info = PwsQueryInfo(args.id.split(","), args.id_sep, args.sync)
 
-    from_dataset = _open_password_db(query_info, "from", getattr(args, "from"), args.from_username, args.from_password)
-    to_dataset = _open_password_db(query_info, "to", args.to, args.to_username, args.to_password)
+    access = _AccessInfo(args.from_username, args.from_secret, args.from_master_password)
+    from_dataset = _open_password_db(query_info, "from", getattr(args, "from"), access)
+    access = _AccessInfo(args.to_username, args.to_secret, args.to_master_password)
+    to_dataset = _open_password_db(query_info, "to", args.to, access)
     syncer = PwsSyncer(from_dataset, to_dataset)
     syncer.sync()
 
