@@ -1,4 +1,12 @@
+.. image:: https://github.com/libkeepass/pykeepass/workflows/CI/badge.svg
+   :target: https://github.com/libkeepass/pykeepass/actions?query=workflow%3ACI
+
 # A Password synchronization tool
+
+<p align="center">
+<a href="https://github.com/aptly-io/pwsync/actions"><img alt="Actions Status" src="https://github.com/aptly-io/pwsync/workflows/CI/badge.svg"></a>
+</p>
+
 
 > Phase: beta.
 
