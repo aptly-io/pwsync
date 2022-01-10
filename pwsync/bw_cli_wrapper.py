@@ -97,13 +97,9 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         super().__init__()
         self._logger = getLogger(LOGGER_NAME)
         self._key_ids = [] if ids is None else ids  # TODO should not use folder,title as default?
-
-        # bw_data = os.path.join(os.getcwd(), "bw-data")
         self._env = dict(os.environ)
-        print(f"############# self._env: {self._env}")
 
-        session = self._make_session(client_id, client_secret, master_password)
-        self._env.update(BW_SESSION=session)
+        self._make_session(client_id, client_secret, master_password)
 
     def _check_output(
         self,
@@ -118,20 +114,21 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         client_id: str,
         client_secret: str,
         master_password: str,
-    ) -> str:
+    ):
         self.logout()
 
         if client_id:
             self._env["BW_CLIENTID"] = client_id
         if client_secret:
             self._env["BW_CLIENTSECRET"] = client_secret
-        check_call(["bw", "--raw", "login", "--apikey"])
+        check_call(["bw", "--raw", "login", "--apikey"], env=self._env)
         self._env.pop("BW_CLIENTID", None)
         self._env.pop("BW_CLIENTSECRET", None)
+
         self._env["BW_MASTER_PASSWORD"] = master_password
-        session = check_output(["bw", "--raw", "unlock", "--passwordenv=BW_MASTER_PASSWORD"])
+        session = self._check_output(["bw", "--raw", "unlock", "--passwordenv=BW_MASTER_PASSWORD"])
         self._env.pop("BW_MASTER_PASSWORD", None)
-        return session.decode("utf-8")
+        self._env.update(BW_SESSION=session.decode("utf-8"))
 
     def _list_objects(
         self,
