@@ -19,6 +19,8 @@
         // "--no-cov", // uncomment to enable debugging the tests
         "--cov=pwsync",
         "--cov-report=xml:cov.xml",
+        "-vvv",
+        "-s",
         "tests",
     ],
     "python.testing.unittestEnabled": false,
