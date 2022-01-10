@@ -40,6 +40,8 @@ jobs:
 
       - name: Run tests
         env:
-          TEST_BW_USERNAME: ${{ secrets.BW_USERNAME }}
-          TEST_BW_PASSWORD: ${{ secrets.BW_PASSWORD }}
+          TEST_BW_CLIENT_ID: ${{ secrets.TEST_BW_CLIENT_ID }}
+          TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
+          TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
+          BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
         run: python -m pytest -s -vvv --cov=pwsync --cov-report=term tests
