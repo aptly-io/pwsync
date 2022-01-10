@@ -98,8 +98,9 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         self._logger = getLogger(LOGGER_NAME)
         self._key_ids = [] if ids is None else ids  # TODO should not use folder,title as default?
 
-        bw_data = os.path.join(os.getcwd(), "bw-data")
-        self._env = dict(os.environ, BITWARDENCLI_APPDATA_DIR=bw_data)
+        # bw_data = os.path.join(os.getcwd(), "bw-data")
+        self._env = dict(os.environ)
+        print(f"############# self._env: {self._env}")
 
         session = self._make_session(client_id, client_secret, master_password)
         self._env.update(BW_SESSION=session)
