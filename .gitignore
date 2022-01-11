@@ -13,3 +13,5 @@ tests/pw2.kdbx
 version.py
 *.log
 .mypy_cache/
+bw-data
+notes.md

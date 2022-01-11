@@ -1,5 +1,10 @@
 # A Password synchronization tool
 
+<p align="center">
+<a href="https://github.com/aptly-io/pwsync/actions"><img alt="Actions Status" src="https://github.com/aptly-io/pwsync/workflows/CI/badge.svg"></a>
+</p>
+
+
 > Phase: beta.
 
 > The author is not liable for any damages cause by this tool. Always start by making a backup.
@@ -37,7 +42,7 @@ Bitwarden's multiple urls and matching patterns, privately hosted Bitwarden etc.
 
 ## Usage
 
-> It is very important to familarize oneself with `pwsync` first!
+> It is important to familarize oneself with `pwsync` first!
 > Use the toy Keepass password database files in the `demo` directory (passphrase is `pw`).
 > Read this documentation to its very end.
 

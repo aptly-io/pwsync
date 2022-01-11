@@ -19,10 +19,10 @@ ORGANIZATION_NAME = "organization"
 
 @pytest.fixture(name="bwc", scope="session")
 def _bwc():
-    session = None
-    username = environ["TEST_BW_USERNAME"]
-    password = environ["TEST_BW_PASSWORD"]
-    cli = BitwardenClientWrapper(session, username, password, ["folder", "name"])
+    client_id = environ["TEST_BW_CLIENT_ID"]
+    client_secret = environ["TEST_BW_CLIENT_SECRET"]
+    password = environ["TEST_BW_MASTER_PASSWORD"]
+    cli = BitwardenClientWrapper(client_id, client_secret, password, ["folder", "name"])
     yield cli
     cli.logout()
 

@@ -1,0 +1,47 @@
+name: CI
+
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  tests:
+    environment: CI
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev
+          sudo snap install bw
+          python --version
+          python -m pip install --upgrade pip setuptools
+          python -m pip install .[dev]
+          python -m pip install .[build]
+          python -m pip install .
+          echo "CWD: $PWD"
+          mkdir bw-data
+          ls -al
+
+      - name: Linting pylama (forced succeed)
+        run: python -m pylama pwsync tests || exit 0
+
+      - name: Linting pylint
+        run: python -m pylint pwsync tests
+
+      - name: Run tests
+        env:
+          TEST_BW_CLIENT_ID: ${{ secrets.TEST_BW_CLIENT_ID }}
+          TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
+          TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
+          BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
+        run: python -m pytest -s -vvv --cov=pwsync --cov-report=term tests
