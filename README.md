@@ -1,6 +1,3 @@
-.. image:: https://github.com/libkeepass/pykeepass/workflows/CI/badge.svg
-   :target: https://github.com/libkeepass/pykeepass/actions?query=workflow%3ACI
-
 # A Password synchronization tool
 
 <p align="center">
@@ -45,7 +42,7 @@ Bitwarden's multiple urls and matching patterns, privately hosted Bitwarden etc.
 
 ## Usage
 
-> It is very important to familarize oneself with `pwsync` first!
+> It is important to familarize oneself with `pwsync` first!
 > Use the toy Keepass password database files in the `demo` directory (passphrase is `pw`).
 > Read this documentation to its very end.
 
