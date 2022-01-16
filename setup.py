@@ -26,9 +26,10 @@ setup(
     url="https://github.com/aptly-io/pwsync",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Operating System :: POSIX :: Linux"  # TODO test on other OSes
+        "Operating System :: POSIX :: Linux",  # TODO test on other OSes
         "Topic :: Utilities",
         "Natural Language :: English",
         "Environment :: Console",
@@ -38,9 +39,7 @@ setup(
     install_requires=[
         "pykeepass",
         "diffsync",
-        # "python-dateutil",
-        "prompt-toolkit",
-        "setuptools>=45.0"  # TODO or should this go under extra_require["build"]
+        "prompt-toolkit"
     ],
     extras_require={
         "dev": [
@@ -54,6 +53,7 @@ setup(
             "types-pytz",
         ],
         "build": [
+            "setuptools>=45.0",
             "wheel",
             "build",
             "twine"

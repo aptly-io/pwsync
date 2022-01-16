@@ -1,5 +1,6 @@
 __pycache__/
 .venv/
+.venv_install_check/
 .eggs/
 *.egg-info/
 pwsync.egg-info/

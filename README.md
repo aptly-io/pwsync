@@ -110,16 +110,34 @@ python -m pip install .[build]
 python -m black pwsync/*.py tests/*.py
 
 # linting and source code analysis
+python -m pylint pwsync tests || echo "FAILED"
 python -m pylama pwsync/*.py
 
 # tests with an xml coverage report for pwsync 
 # the test_bwc requires an online account; provide the credentials in env. vars.
 export TEST_BW_USERNAME=...
 export TEST_BW_PASSWORD=...
-python -m pytest -s -vvv --cov=pwsync --cov-report=xml:cov.xml tests
+python -m pytest -s -vvv --cov=pwsync --cov-report=xml:cov.xml tests || echo "FAILED"
 
 # for distribution
+# for the proper version to be generated, use the main branch with a tag like v0.1b5
 python -m build
+
+# upload on testpypi
+twine check dist/* # basic check
+
+# do a minimal test of the package in a new venv
+deactivate
+python3.7 -m venv .venv_install_check
+. .venv_install_check/bin/activate
+python3.7 -m pip install dist/pwsync-0.1b5-py3-none-any.whl
+which pwsync
+pwsync --from demo/from.kdbx --to demo/to.kdbx
+deactivate
+rm -rf .venv_install_check
+
+# finally upload
+python -m twine upload --repository testpypi dist/*
 ```
 
 ## Technical details
