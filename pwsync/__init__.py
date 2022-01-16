@@ -2,6 +2,10 @@
 
 """Password database Synchronization package"""
 
+import sys
+
+assert sys.version_info >= (3, 7)
+
 from .bw_cli_wrapper import BitwardenClientWrapper
 from .common import PwsDuplicate, PwsMissingOrganization, PwsUnsupported
 from .dataset import PasswordDataset
