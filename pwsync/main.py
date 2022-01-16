@@ -31,7 +31,8 @@ class _AccessInfo:
 
 def _parse_command_line():
     parser = ArgumentParser(
-        description="Synchronise 'from' a password databases 'to' another", formatter_class=ArgumentDefaultsHelpFormatter
+        description="Synchronise 'from' a password databases 'to' another",
+        formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
     parser.add_argument(
