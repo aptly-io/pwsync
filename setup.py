@@ -28,7 +28,7 @@ setup(
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Operating System :: POSIX :: Linux"  # TODO test on other OSes
+        "Operating System :: POSIX :: Linux",  # TODO test on other OSes
         "Topic :: Utilities",
         "Natural Language :: English",
         "Environment :: Console",
