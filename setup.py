@@ -39,9 +39,7 @@ setup(
     install_requires=[
         "pykeepass",
         "diffsync",
-        # "python-dateutil",
-        "prompt-toolkit",
-        "setuptools>=45.0"  # TODO or should this go under extra_require["build"]
+        "prompt-toolkit"
     ],
     extras_require={
         "dev": [
@@ -55,6 +53,7 @@ setup(
             "types-pytz",
         ],
         "build": [
+            "setuptools>=45.0",
             "wheel",
             "build",
             "twine"
