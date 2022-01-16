@@ -7,19 +7,22 @@
 
 > Phase: beta.
 
-> The author is not liable for any damages cause by this tool. Always start by making a backup.
+> Nobody can be held liable for any damages cause by this tool.
+> Always make a backup before using this tool.
 
 _pwsync_ is a low level command line tool that synchronizes _password databases_.
 
-`pwsync` grew from a personal need to simplify my credential usage with online service
-(e.g. for web shops, banks, cloud services, ...) on different platforms (Ubuntu, iPad, Android mobile, ...).
-Keepass feels outdated for such use-cases. 
-Bitwarden simplifies authenticating thanks to its 
+`pwsync` grew from a personal need to simplify credential usage for online services
+(e.g. for web shops, banks, cloud services, ...) 
+on different platforms (Ubuntu, iPad, Android mobile, ...).
+Keepass is outdated for these use-cases. 
+Bitwarden (and alikes) simplify authentication thanks to its
 [browser extension](https://bitwarden.com/help/article/getting-started-browserext/).
-Due to the personal usage, `pwsync` only supports 
+Due to the personal use case, `pwsync` only supports 
 [_Keepass_](https://keepass.info/) database files
 and [_Bitwarden_](https://bitwarden.com/) online database.
-One can add support for other cloud password services if their (public) REST API is known.
+But anybody can add support for other cloud password services 
+if their (public) REST API is known.
 
 These properties of the password database features are handled (the _lowest common denominator_):
 
@@ -79,7 +82,7 @@ python3.8 -m venv .venv
 . .venv/bin/activate
 
 # upgrade pip and setuptools
-python -m pip install --upgrade pip setuptools
+python -m pip install --upgrade pip setuptools build
 ```
 
 ### As user
