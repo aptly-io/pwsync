@@ -5,8 +5,6 @@
 </p>
 
 
-> Phase: beta.
-
 > Nobody can be held liable for any damages cause by this tool.
 > Always make a backup before using this tool.
 
