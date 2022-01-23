@@ -36,12 +36,14 @@ def _parse_command_line():
     )
 
     parser.add_argument(
+        "-f",
         "--from",
         required=True,
         help="synchronize from. Specify a Keepass database filename or the keyword 'bitwarden'",
     )
 
     parser.add_argument(
+        "-t",
         "--to",
         required=True,
         help="synchronize to. Only this might be modified (take a backup?). "
@@ -49,6 +51,7 @@ def _parse_command_line():
     )
 
     parser.add_argument(
+        "-d",
         "--dry-run",
         action="store_true",
         help="describe the action then quit without modifications",
@@ -64,6 +67,7 @@ def _parse_command_line():
     parser.add_argument("--id-sep", default=":", help="a separator to separate the id key parts (see --id)")
 
     parser.add_argument(
+        "-a",
         "--sync-all",
         action="store_true",
         help="synchronize all the password database entries. "
