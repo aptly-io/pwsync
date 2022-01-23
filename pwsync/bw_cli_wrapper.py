@@ -125,8 +125,12 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         self._env.pop("BW_CLIENTID", None)
         self._env.pop("BW_CLIENTSECRET", None)
 
-        self._env["BW_MASTER_PASSWORD"] = master_password
-        session = check_output(["bw", "--raw", "unlock", "--passwordenv=BW_MASTER_PASSWORD"], env=self._env)
+        unlock_command = ["bw", "--raw", "unlock"]
+        if master_password:
+            self._env["BW_MASTER_PASSWORD"] = master_password
+            unlock_command.append("--passwordenv=BW_MASTER_PASSWORD")
+
+        session = check_output(unlock_command, env=self._env)
         self._env.pop("BW_MASTER_PASSWORD", None)
         self._env.update(BW_SESSION=session.decode("utf-8"))
 
