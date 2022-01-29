@@ -218,15 +218,17 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         if not name:
             return None
         objects = self._list_objects(kind + "s", name, organization_uuid)
-        if not objects and create:
+        uuids = [o["id"] for o in objects if name == o.get("name")]
+        if len(uuids) > 1:
+            raise PwsUnsupported("multiple uuids for {kind} ({name})")
+
+        if not uuids and create:
             new_object = {"name": name}
             if organization_uuid:
                 new_object["organizationId"] = organization_uuid
-            uuid = self._create_object(new_object, kind, organization_uuid)["id"]
-        else:
-            uuid = None
-        # TODO likely multiple objects with the same name are possible, how to handle this?
-        return uuid if not objects else objects[0]["id"]
+            return self._create_object(new_object, kind, organization_uuid)["id"]
+
+        return uuids[0] if uuids else None
 
     def _find_folder_uuid(
         self,
