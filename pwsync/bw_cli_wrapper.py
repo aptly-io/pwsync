@@ -40,6 +40,21 @@ IDENTITY_TYPE = 4
 LOGIN_SUBTYPE = 0
 
 # bw get template item
+# item template looks like {
+#     "organizationId": null,
+#     "collectionIds": null,
+#     "folderId": null,
+#     "type": 1,
+#     "name": "Item name",
+#     "notes": "Some notes about this item.",
+#     "favorite": false,
+#     "fields": [],
+#     "login": null,
+#     "secureNote": null,
+#     "card": null,
+#     "identity": null,
+#     "reprompt": 0,
+# }
 # card_template looks like {
 #     "cardholderName" -> "John Doe",
 #     "brand" -> "visa",
@@ -139,7 +154,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         kind: str = "items",
         match: Optional[str] = None,
         organization_uuid: Optional[str] = None,
-    ):
+    ) -> List[Dict]:
         check_call(["bw", "sync", "--quiet"], env=self._env)
         if match:
             cmd = ["bw", "--raw", "list", kind, "--search", match]
@@ -147,8 +162,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             cmd = ["bw", "--raw", "list", kind]
         if organization_uuid:
             cmd += ["--organizationid", organization_uuid]
-        objects = self._check_output(cmd)
-        return objects
+        return list(self._check_output(cmd))
 
     def _get_object(
         self,
