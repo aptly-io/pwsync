@@ -26,6 +26,7 @@ from .common import (
     URL,
     PwsQueryInfo,
     PwsUnsupported,
+    RunOptions,
 )
 from .database_cli import PwsDatabaseClient
 from .dataset import PasswordDataset
@@ -183,7 +184,9 @@ def _sync_element(kind: str, element: PwsDiffElement, to_db: PwsDatabaseClient):
         raise PwsUnsupported(f"_sync_element({kind})")
 
 
-def _sync_section(kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, dry_run: bool, to_dataset: PasswordDataset):
+def _sync_section(
+    kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset
+):
     def _get_key_using_from_item(diff_element: PwsDiffElement):
         return diff_element.from_item.make_id(query_info) if diff_element.from_item else ""
 
@@ -222,7 +225,14 @@ def _sync_section(kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, dry_ru
             count, query_info, section_folder, getattr(element, props_name), element.from_item, element.to_item
         )
 
-        if not dry_run and kind in ("update", "create", "delete"):
+        if run_options.dry_run:
+            continue
+
+        if run_options.auto_update and kind == "update":
+            _sync_element(kind, element, to_dataset.client)
+        elif run_options.auto_create and kind == "create":
+            _sync_element(kind, element, to_dataset.client)
+        elif kind in ("update", "create", "delete"):
             answer = _sync_prompt(kind)[0].lower()
             if answer == "q":
                 sys.exit(0)
@@ -232,12 +242,12 @@ def _sync_section(kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, dry_ru
                 _sync_element(kind, element, to_dataset.client)
 
 
-def console_sync(query_info: PwsQueryInfo, syncer: PwsSyncer, dry_run: bool, to_dataset: PasswordDataset):
+def console_sync(query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset):
     """synchronize with an interactive console"""
 
-    _sync_section("conflict", query_info, syncer, dry_run, to_dataset)
-    _sync_section("update", query_info, syncer, dry_run, to_dataset)
-    _sync_section("create", query_info, syncer, dry_run, to_dataset)
-    _sync_section("delete", query_info, syncer, dry_run, to_dataset)
-    _sync_section("skipped", query_info, syncer, dry_run, to_dataset)
-    _sync_section("unchanged", query_info, syncer, dry_run, to_dataset)
+    _sync_section("conflict", query_info, syncer, run_options, to_dataset)
+    _sync_section("update", query_info, syncer, run_options, to_dataset)
+    _sync_section("create", query_info, syncer, run_options, to_dataset)
+    _sync_section("delete", query_info, syncer, run_options, to_dataset)
+    _sync_section("skipped", query_info, syncer, run_options, to_dataset)
+    _sync_section("unchanged", query_info, syncer, run_options, to_dataset)
