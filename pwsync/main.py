@@ -13,7 +13,7 @@ from time import strftime
 from typing import Optional
 
 from .bw_cli_wrapper import BitwardenClientWrapper
-from .common import LOGGER_NAME, PwsNotFound, PwsQueryInfo
+from .common import LOGGER_NAME, PwsNotFound, PwsQueryInfo, RunOptions
 from .console import console_sync
 from .dataset import PasswordDataset
 from .gui import gui_sync
@@ -125,6 +125,9 @@ def _parse_command_line():
         + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
     )
 
+    parser.add_argument("-U", "--auto-update", action="store_true", help="automatically update all entries")
+    parser.add_argument("-C", "--auto-create", action="store_true", help="automatically create all entries")
+
     parser.add_argument("--gui", action="store_true", help="use a graphical user interface (not implemented)")
 
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
@@ -217,12 +220,13 @@ def main():
     syncer = PwsSyncer(from_dataset, to_dataset)
     syncer.sync()
 
+    run_options = RunOptions(args.dry_run, args.auto_update, args.auto_create)
     # TODO validate the password database soundness before synchronizing
 
     if args.gui:
-        gui_sync(query_info, syncer, args.dry_run, to_dataset)
+        gui_sync(query_info, syncer, run_options, to_dataset)
     else:
-        console_sync(query_info, syncer, args.dry_run, to_dataset)
+        console_sync(query_info, syncer, run_options, to_dataset)
 
 
 if __name__ == "__main__":

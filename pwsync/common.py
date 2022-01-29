@@ -57,3 +57,12 @@ class PwsQueryInfo:
     ids: List[str]
     id_sep: str = ":"
     sync: bool = True
+
+
+@dataclass
+class RunOptions:
+    """options on how to perform the syncing"""
+
+    dry_run: bool = False
+    auto_update: bool = False
+    auto_create: bool = False
