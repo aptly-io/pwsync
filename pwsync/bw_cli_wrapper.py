@@ -8,6 +8,10 @@
 # - support syncing reprompt
 # - support syncing identity and secure note
 
+# When using the bw-cli, entering the master password after its prompt is hidden (for good reason).
+# When authenticating with --apikey, the client_secret is not; it is even highlighted in a different color.
+# What is the reason for this approach?
+
 import json
 import os
 from base64 import b64encode
@@ -30,7 +34,7 @@ from .common import (
 from .database_cli import PwsDatabaseClient
 from .item import PwsItem
 
-# observed item types:
+# Item Types. Used with the create command to specify a Vault item type:
 USER_TYPE = 1  # a login item (has inside a login sub-type)
 SECURE_NOTE_TYPE = 2
 CARD_TYPE = 3
@@ -38,6 +42,37 @@ IDENTITY_TYPE = 4
 
 # observed sub-types:
 LOGIN_SUBTYPE = 0
+
+# Two-step Login Methods.
+# Used to specify which Two-step Login method to use when logging in:
+# Note FIDO2 and Duo are not supported by the CLI.
+# Authenticator	0
+# Email	1
+# YubiKey	3
+
+# Login URI Match Types
+# Domain	0
+# Host	1
+# Starts With	2
+# Exact	3
+# Regular Expression	4
+# Never	5
+
+# Field Types
+# Text	0
+# Hidden	1
+# Boolean	2
+
+# Organization User Types
+# Owner	0
+# Admin	1
+# User	2
+# Manager	3
+
+# Organization User Statuses
+# Invited	0
+# Accepted	1
+# Confirmed	2
 
 # bw get template item
 # item template looks like {
