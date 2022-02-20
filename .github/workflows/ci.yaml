@@ -21,8 +21,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev npm
-          sudo npm i @bitwarden/cli@1.19.1
+          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          nvm install 14.4.0
+          npm i @bitwarden/cli@1.19.1
           bw --version
           python --version
           python -m pip install --upgrade pip setuptools
