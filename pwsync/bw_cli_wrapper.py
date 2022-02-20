@@ -16,7 +16,7 @@ import json
 import os
 from base64 import b64encode
 from logging import getLogger
-from subprocess import call, check_call, check_output
+from subprocess import CalledProcessError, call, check_call, check_output
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -160,8 +160,16 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         cmd: List[str],
         input_value=None,
     ):
+        try:
         result_json = check_output(cmd, input=input_value, env=self._env)
+            self._logger.debug(f"cmd: {cmd}, result: {result_json}")
         return json.loads(result_json)
+        except CalledProcessError as exc:
+            result_json = f"ret: {exc.returncode}, stdout: {exc.output}, stderr: {exc.stderr}"
+            self._logger.error(f"cmd: {cmd}, result: {result_json}")
+            raise exc
+
+    @eet
     def _get_status(self):
         version = check_output(["bw", "--version"]).strip().decode("utf-8")
         status_obj = self._check_output(["bw", "--raw", "status"])
@@ -209,6 +217,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             unlock_command.append("--passwordenv=BW_MASTER_PASSWORD")
             try:
                 session = check_output(unlock_command, env=self._env).strip().decode("utf-8")
+                self._logger.debug("cmd: %s", unlock_command)
                 self._env.update(BW_SESSION=session)
                 self._sync()
             finally:
