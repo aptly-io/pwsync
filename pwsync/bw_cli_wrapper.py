@@ -34,6 +34,10 @@ from .common import (
 from .database_cli import PwsDatabaseClient
 from .item import PwsItem
 
+# Bitwarden client 1.21.1 on MacOs has an issue with bw list items
+# (https://github.com/bitwarden/cli/issues/490)
+BW_SUPPORTED_VERSION = "1.19.1"
+
 # Item Types. Used with the create command to specify a Vault item type:
 USER_TYPE = 1  # a login item (has inside a login sub-type)
 SECURE_NOTE_TYPE = 2
@@ -158,7 +162,14 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     ):
         result_json = check_output(cmd, input=input_value, env=self._env)
         return json.loads(result_json)
+    def _get_status(self):
+        version = check_output(["bw", "--version"]).strip().decode("utf-8")
+        status_obj = self._check_output(["bw", "--raw", "status"])
+        status = status_obj.get("status", "unauthenticated")  # locked, unlocked, unauthenticated
+        user_id = status_obj.get("userId", "")
+        return (status, user_id, version)
 
+    @eet
     def _sync(self):
         cmd = ["bw", "sync"]  # --force
         result = check_output(cmd, env=self._env).strip().decode("utf-8")
@@ -170,6 +181,11 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         client_secret: str,
         master_password: str,
     ):
+        status, user_id, version = self._get_status()
+
+        if version != BW_SUPPORTED_VERSION:
+            raise PwsUnsupported(f"Use bitwareden-cli {BW_SUPPORTED_VERSION}. {version} is not supported!")
+
         self.logout()
 
         if client_id:
