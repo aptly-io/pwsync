@@ -44,4 +44,4 @@ jobs:
           TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
           TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
           BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
-        run: python -m pytest -s -vvv --cov=pwsync --cov-report=term tests
+        run: python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests
