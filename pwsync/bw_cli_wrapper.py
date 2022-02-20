@@ -186,23 +186,33 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         if version != BW_SUPPORTED_VERSION:
             raise PwsUnsupported(f"Use bitwareden-cli {BW_SUPPORTED_VERSION}. {version} is not supported!")
 
+        if client_id != f"user.{user_id}" and status != "unauthenticated":
         self.logout()
+            status = "unauthenticated"
 
+        if status == "unauthenticated":
         if client_id:
             self._env["BW_CLIENTID"] = client_id
         if client_secret:
             self._env["BW_CLIENTSECRET"] = client_secret
+            try:
         check_call(["bw", "--raw", "login", "--apikey"], env=self._env)
+            finally:
         self._env.pop("BW_CLIENTID", None)
         self._env.pop("BW_CLIENTSECRET", None)
+            status = "locked"
 
+        if status == "locked":
         unlock_command = ["bw", "--raw", "unlock"]
         if master_password:
             self._env["BW_MASTER_PASSWORD"] = master_password
             unlock_command.append("--passwordenv=BW_MASTER_PASSWORD")
+            try:
+                session = check_output(unlock_command, env=self._env).strip().decode("utf-8")
+                self._env.update(BW_SESSION=session)
                 self._sync()
+            finally:
         self._env.pop("BW_MASTER_PASSWORD", None)
-        self._env.update(BW_SESSION=session.decode("utf-8"))
 
     def _list_objects(
         self,
