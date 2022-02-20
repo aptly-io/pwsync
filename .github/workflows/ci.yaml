@@ -21,8 +21,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev
-          sudo snap install bw
+          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev npm
+          sudo npm i @bitwarden/cli@1.19.1
+          bw --version
           python --version
           python -m pip install --upgrade pip setuptools
           python -m pip install .[dev]
