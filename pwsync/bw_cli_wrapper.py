@@ -491,7 +491,11 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         sync_flag: Optional[bool] = None,
     ) -> List[PwsItem]:
         """reads Bitwarden object(s) with given optional key and sync flag"""
-        objects = self._list_objects() if key is None else [self._get_object(_key2uuid(key))]
+        if key is None:
+            objects = self._list_objects()
+        else:
+            obj = self._get_object(_key2uuid(key))
+            objects = [] if obj is None else [obj]
 
         if sync_flag:
             return [self._object2item(o) for o in objects if _has_sync(o)]
