@@ -159,6 +159,11 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         result_json = check_output(cmd, input=input_value, env=self._env)
         return json.loads(result_json)
 
+    def _sync(self):
+        cmd = ["bw", "sync"]  # --force
+        result = check_output(cmd, env=self._env).strip().decode("utf-8")
+        self._logger.debug(f"cmd: {cmd}, result: {result}")
+
     def _make_session(
         self,
         client_id: str,
@@ -179,8 +184,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         if master_password:
             self._env["BW_MASTER_PASSWORD"] = master_password
             unlock_command.append("--passwordenv=BW_MASTER_PASSWORD")
-
-        session = check_output(unlock_command, env=self._env)
+                self._sync()
         self._env.pop("BW_MASTER_PASSWORD", None)
         self._env.update(BW_SESSION=session.decode("utf-8"))
 
@@ -190,7 +194,6 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         match: Optional[str] = None,
         organization_uuid: Optional[str] = None,
     ) -> List[Dict]:
-        check_call(["bw", "sync", "--quiet"], env=self._env)
         if match:
             cmd = ["bw", "--raw", "list", kind, "--search", match]
         else:
@@ -204,7 +207,6 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         uuid: str,
         kind: str = "item",
     ) -> Optional[Dict]:
-        check_call(["bw", "sync", "--quiet"], env=self._env)
         obj = self._check_output(["bw", "--raw", "get", kind, uuid])
         return obj
 
@@ -451,6 +453,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             "identity": None,
         }
         new_obj = self._create_object(obj)
+        self._sync()
         new_item = self._object2item(new_obj)
 
         return new_item
@@ -531,6 +534,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         # pylint: enable=too-many-branches
 
         updated_object = self._edit_object(uuid_str, obj, kind="item")
+        self._sync()
         updated_item = self._object2item(updated_object)
         return updated_item
 
