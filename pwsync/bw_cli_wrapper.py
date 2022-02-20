@@ -420,6 +420,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     def logout(self):
         """Lock and logout from the online Bitwarden password database"""
         getLogger("pwsync").info("logout!")
+        self._env.pop("BW_SESSION", None)
         call(["bw", "--quiet", "lock"])  # ignore failures (e.g. locked already?)
         call(["bw", "--quiet", "logout"])  # ignore failures (e.g. already out?)
 
