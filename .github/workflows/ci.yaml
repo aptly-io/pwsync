@@ -20,7 +20,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          echo "$GITHUB_WORKSPACE/node_modules/.bin" >>$GITHUB_PATH
           sudo apt update
           sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev curl
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
@@ -30,18 +29,8 @@ jobs:
           nvm install 14.4.0
           npm install -g npm@7.24.2
           npm --version
-          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
-          echo "### GITHUB_PATH:"
-          cat $GITHUB_PATH
-          echo "### PATH:"
-          echo $PATH
-          echo "### ls -al HOME:"
-          ls -al $HOME
           npm i @bitwarden/cli@1.19.1
-          echo "### find"
-          find $HOME -name "*bitwarden"
-          find $HOME -name "*.bin"
-          env
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           bw --version
           python --version
           python -m pip install --upgrade pip setuptools
@@ -50,7 +39,6 @@ jobs:
           python -m pip install .
           echo "CWD: $PWD"
           mkdir bw-data
-          ls -al
 
       - name: Linting pylama (forced succeed)
         run: python -m pylama pwsync tests || exit 0
@@ -65,5 +53,5 @@ jobs:
           TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
           BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
         run: |
-          echo "$HOME/node_modules/.bin" >>$GITHUB_PATH
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests
