@@ -30,12 +30,18 @@ jobs:
           nvm install 14.4.0
           npm install -g npm@7.24.2
           npm --version
+          echo "### GITHUB_PATH:"
           cat $GITHUB_PATH
-          ls $HOME
-          npm i @bitwarden/cli@1.19.1
-          ls $HOME/node_modules
-          ls $HOME/node_modules/.bin
+          echo "### PATH:"
           echo $PATH
+          echo "### ls -al HOME:"
+          ls -al $HOME
+          npm i @bitwarden/cli@1.19.1
+          echo "### find"
+          find $HOME -name "node_modules" || echo "find failed"
+          find $HOME -name "node_modules" -exec ls -al {} \;
+          ls -al $HOME/node_modules || echo "no node_modules"
+          ls -al $HOME/node_modules/.bin || echo "no .bin"
           $HOME/node_modules/.bin/bw.js --version
           bw --version
           python --version
