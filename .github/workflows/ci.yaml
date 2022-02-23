@@ -30,6 +30,7 @@ jobs:
           nvm install 14.4.0
           npm install -g npm@7.24.2
           npm --version
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           echo "### GITHUB_PATH:"
           cat $GITHUB_PATH
           echo "### PATH:"
