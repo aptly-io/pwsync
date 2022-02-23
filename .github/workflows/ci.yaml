@@ -38,8 +38,8 @@ jobs:
           ls -al $HOME
           npm i @bitwarden/cli@1.19.1
           echo "### find"
-          find $HOME -name "node_modules" || echo "find failed"
-          find $HOME -name "node_modules" -exec ls -al {} \;
+          find $HOME -name "*bitwarden"
+          find $HOME -name "*.bin"
           ls -al $HOME/node_modules || echo "no node_modules"
           ls -al $HOME/node_modules/.bin || echo "no .bin"
           $HOME/node_modules/.bin/bw.js --version
