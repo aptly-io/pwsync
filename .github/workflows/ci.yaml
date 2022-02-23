@@ -29,7 +29,14 @@ jobs:
           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
           nvm install 14.4.0
           npm install -g npm@7.24.2
+          npm --version
+          cat $GITHUB_PATH
+          ls $HOME
           npm i @bitwarden/cli@1.19.1
+          ls $HOME/node_modules
+          ls $HOME/node_modules/.bin
+          echo $PATH
+          $HOME/node_modules/.bin/bw.js --version
           bw --version
           python --version
           python -m pip install --upgrade pip setuptools
