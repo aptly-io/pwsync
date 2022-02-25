@@ -15,8 +15,10 @@
 import json
 import os
 from base64 import b64encode
+from functools import wraps
 from logging import getLogger
 from subprocess import CalledProcessError, call, check_call, check_output
+from time import time
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -124,8 +126,6 @@ LOGIN_SUBTYPE = 0
 
 def eet(fun):
     """Trace enter and exit of callable with timing"""
-    from time import time
-    from functools import wraps
 
     @wraps(fun)
     def wrapper(*args, **kwargs):
@@ -191,11 +191,11 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     ):
         try:
             result_json = check_output(cmd, input=input_value, env=self._env)
-            self._logger.debug(f"cmd: {cmd}, result: {result_json}")
+            self._logger.debug("cmd: %s, result: %s", cmd, result_json)
             return json.loads(result_json)
         except CalledProcessError as exc:
             result_json = f"ret: {exc.returncode}, stdout: {exc.output}, stderr: {exc.stderr}"
-            self._logger.error(f"cmd: {cmd}, result: {result_json}")
+            self._logger.error("cmd: %s, result: %s", cmd, result_json)
             raise exc
 
     @eet
@@ -210,7 +210,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     def _sync(self):
         cmd = ["bw", "sync"]  # --force
         result = check_output(cmd, env=self._env).strip().decode("utf-8")
-        self._logger.debug(f"cmd: {cmd}, result: {result}")
+        self._logger.debug("cmd: %s, result: %s", cmd, result)
 
     @eet
     def _make_session(

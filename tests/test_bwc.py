@@ -40,6 +40,7 @@ def _bwc():
 def clean_bw_vault(bwc, logger):
     logger.debug("Purge vault")
     # is there an alternative to purge the vault?
+    # pylint: disable=protected-access
     for obj in bwc._list_objects():
         bwc._delete_object(obj["id"])
     for folder in bwc._list_objects("folders"):
@@ -51,6 +52,7 @@ def clean_bw_vault(bwc, logger):
     for collection in bwc._list_objects("org-collections", None, organization_uuid):
         bwc._delete_object(collection["id"], "org-collection", organization_uuid)
     # TODO how to delete "organizations"?
+    # pylint: enable=protected-access
 
 
 def test_no_items(bwc):
