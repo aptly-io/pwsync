@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import List, Optional, Set
 
+from diffsync.enum import DiffSyncActions
 from diffsync.logging import enable_console_logging
 
 from .common import (
@@ -78,15 +79,15 @@ class PwsSyncer:
         for diff_element in diff.get_children():
             self._logger.debug("action: %s", diff_element.action)
             # self._print(diff_element)
-            if diff_element.action == "create":
+            if diff_element.action == DiffSyncActions.CREATE:
                 self._create(diff_element)
-            elif diff_element.action == "delete":
+            elif diff_element.action == DiffSyncActions.DELETE:
                 self._delete(diff_element)
             # Seems not called, action seems to contain None instead?
             # elif "no-change" == diff_element.action:
             elif diff_element.action is None:
                 self._unchanged(diff_element)
-            elif diff_element.action == "update":
+            elif diff_element.action == DiffSyncActions.UPDATE:
                 self._update(diff_element)
             else:
                 raise Exception(f"Unexpected action: {diff_element.action}")
