@@ -93,7 +93,7 @@ python -m pip install --upgrade pip setuptools build
 Install the script and try-out the installation with the command command shown in Usage.
 
 ```bash
-python3 -m pip install .
+python -m pip install .
 ```
 
 ### As developer
