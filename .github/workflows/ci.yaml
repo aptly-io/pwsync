@@ -46,7 +46,7 @@ jobs:
       - name: Linting pylint
         run: python -m pylint pwsync tests
 
-      - name: Run tests
+      - name: Run unit tests
         env:
           TEST_BW_CLIENT_ID: ${{ secrets.TEST_BW_CLIENT_ID }}
           TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
@@ -55,3 +55,14 @@ jobs:
         run: |
           PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests
+
+      - name: Run a simple integration test
+        env:
+          PWS_FROM_MASTER_PASSWORD: pw
+          PWS_TO_MASTER_PASSWORD: pw
+        run: |
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
+          pwsync -h
+          pwsync -v
+          pwsync -d -f demo/from.kdbx -t demo/to.kdbx
+          pwsync -f demo/from.kdbx -t demo/to.kdbx
