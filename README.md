@@ -134,13 +134,13 @@ twine check dist/* # basic check
 
 # do a minimal test of the package in a new venv
 deactivate
-python3.7 -m venv .venv_install_check
-. .venv_install_check/bin/activate
-python3.7 -m pip install dist/pwsync-0.1b5-py3-none-any.whl
+python3.8 -m venv .venv_install
+. .venv_install/bin/activate
+python -m pip install dist/pwsync-0.1b5-py3-none-any.whl
 which pwsync
 pwsync --from demo/from.kdbx --to demo/to.kdbx
 deactivate
-rm -rf .venv_install_check
+rm -rf .venv_install
 
 # finally upload
 python -m twine upload --repository testpypi dist/*
