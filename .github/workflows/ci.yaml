@@ -34,36 +34,36 @@ jobs:
           bw --version
           python --version
           python -m pip install --upgrade pip setuptools
-      #     python -m venv .venv_dev
-      #     . venv/bin/activate
-      #     python -m pip install .[dev]
-      #     python -m pip install .
-      #     deactivate
-      #     mkdir bw-data
+          python -m venv .venv_dev
+          . venv/bin/activate
+          python -m pip install .[dev]
+          python -m pip install .
+          deactivate
+          mkdir bw-data
 
-      # - name: Linting with pylama (does a forced succeed!)
-      #   run: |
-      #     . .venv_dev/bin/activate
-      #     python -m pylama pwsync tests ||:
-      #     deactivate
+      - name: Linting with pylama (does a forced succeed!)
+        run: |
+          . .venv_dev/bin/activate
+          python -m pylama pwsync tests ||:
+          deactivate
 
-      # - name: Linting pwith ylint
-      #   run: |
-      #     . .venv_dev/bin/activate
-      #     python -m pylint pwsync tests
-      #     deactivate
+      - name: Linting pwith ylint
+        run: |
+          . .venv_dev/bin/activate
+          python -m pylint pwsync tests
+          deactivate
 
-      # - name: Run unit tests
-      #   env:
-      #     TEST_BW_CLIENT_ID: ${{ secrets.TEST_BW_CLIENT_ID }}
-      #     TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
-      #     TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
-      #     BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
-      #   run: |
-      #     . .venv_dev/bin/activate
-      #     PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
-      #     python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests
-      #     deactivate
+      - name: Run unit tests
+        env:
+          TEST_BW_CLIENT_ID: ${{ secrets.TEST_BW_CLIENT_ID }}
+          TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
+          TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
+          BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
+        run: |
+          . .venv_dev/bin/activate
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
+          python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests
+          deactivate
 
       - name: Build package
         run: |
