@@ -69,6 +69,7 @@ jobs:
         run: |
           python -m venv .venv_build
           . .venv_build/bin/activate
+          python -m pip install --upgrade pip setuptools
           python -m pip install .[build]
           python -m pip install .
           python -m build
