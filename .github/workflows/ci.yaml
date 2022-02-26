@@ -77,6 +77,13 @@ jobs:
           twine check --strict dist/$WHL_PKG_NAME
           deactivate
 
+      - uses: actions/upload-artifact@v2
+        with:
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+          if-no-files-found: error
+
       - name: Run a simple integration test
         env:
           PWS_FROM_MASTER_PASSWORD: pw
