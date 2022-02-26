@@ -33,7 +33,7 @@ jobs:
           PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           bw --version
           python --version
-          python -m pip install --upgrade pip setuptools venv
+          python -m pip install --upgrade pip setuptools
       #     python -m venv .venv_dev
       #     . venv/bin/activate
       #     python -m pip install .[dev]
