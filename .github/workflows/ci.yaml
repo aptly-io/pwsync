@@ -79,9 +79,14 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: |
-            dist/*.whl
-            dist/*.tar.gz
+          name: Source distribution package
+          path: dist/pwsync-*.tar.gz
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Install distribution package
+          path: dist/pwsync-*.whl
           if-no-files-found: error
 
       - name: Run a simple integration test
