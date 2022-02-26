@@ -35,7 +35,7 @@ jobs:
           python --version
           python -m pip install --upgrade pip setuptools
           python -m venv .venv_dev
-          . venv/bin/activate
+          . .venv_dev/bin/activate
           python -m pip install .[dev]
           python -m pip install .
           deactivate
