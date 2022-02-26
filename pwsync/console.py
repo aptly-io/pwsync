@@ -215,7 +215,7 @@ def _sync_section(
     elif kind == "unchanged":
         return  # TODO handle skipped
 
-    print_ft(HTML(_markup(f"{kind.title()} ({len(data)})", "info")), style=STYLE)
+    print_ft(HTML(_markup(f"To {kind}: {len(data)}", "info")), style=STYLE)
 
     section_folder = ""
     count = 0

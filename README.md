@@ -13,23 +13,23 @@ _pwsync_ is a low level command line tool that synchronizes _password databases_
 `pwsync` grew from a personal need to simplify credential usage for online services
 (e.g. for web shops, banks, cloud services, ...) 
 on different platforms (Ubuntu, iPad, Android mobile, ...).
-Keepass is outdated for these use-cases. 
+Keepass feels outdated for such use-cases. 
 Bitwarden (and alikes) simplify authentication thanks to its
 [browser extension](https://bitwarden.com/help/article/getting-started-browserext/).
 Due to the personal use case, `pwsync` only supports 
 [_Keepass_](https://keepass.info/) database files
 and [_Bitwarden_](https://bitwarden.com/) online database.
 But anybody can add support for other cloud password services 
-if their (public) REST API is known.
+if their (public) REST API is known with a Pull Request.
 
 These properties of the password database features are handled (the _lowest common denominator_):
 
-- a hierarchical classification _folder_/_group_
+- a hierarchical classification with _folder_/_group_
 - a credential's _title_/description
 - a _username_ (an empty username is not supported)
 - a _password_
 - (per credential) _notes_
-- one _url_ (without matching capabilities of Bitwarden)
+- one _url_ (without the matching capabilities of Bitwarden)
 - a one time pass code (_TOTP_ which Keepass stores in its _attributes_ property as _pws_totp_)
 - a _favorite_ flag (Keepass stores this in its attributes property as _pws_fav_)
 - an organization (required when using collections, which Keepass stores as _pws_org_ in its attributes property)
@@ -39,7 +39,8 @@ These properties of the password database features are handled (the _lowest comm
 
 Support for fields, icons, expiration date, the automatic creation of organizations,
 changes on a credential's collection set, Bitwarden's reprompt, 
-Bitwarden's multiple urls and matching patterns, privately hosted Bitwarden etc. _is missing_!
+Bitwarden's multiple urls and matching patterns, privately hosted Bitwarden etc.
+_is currently missing_!
 
 ## Usage
 
@@ -67,7 +68,8 @@ pwsync -h
 This tool and its installation description can be found
 [here](https://bitwarden.com/help/article/cli/#download-and-install).
 
-Take care, version 1.21.1 regressed from 1.19.1. Use the latter!
+Take care! The Bitwarden-cli version 1.21.1 regressed since 1.19.1. 
+Find the issue here: https://github.com/bitwarden/cli/issues/490. So use version 1.19.1!
 ```bash
 npm install -g  @bitwarden/cli@1.19.1
 ```
@@ -93,17 +95,17 @@ python -m pip install --upgrade pip setuptools build
 Install the script and try-out the installation with the command command shown in Usage.
 
 ```bash
-python -m pip install .
+python -m pip install --upgrade .
 ```
 
 ### As developer
 
 ```bash
 # use an "editable" install together with tools for source code formatting, linting and testing
-python -m pip install -e .[dev]
+python -m pip install --upgrade -e .[dev]
 
 # and/or with tools for building a distribution
-python -m pip install .[build]
+python -m pip install --upgrade .[build]
 ```
 
 ### Development
@@ -132,13 +134,13 @@ twine check dist/* # basic check
 
 # do a minimal test of the package in a new venv
 deactivate
-python3.7 -m venv .venv_install_check
-. .venv_install_check/bin/activate
-python3.7 -m pip install dist/pwsync-0.1b5-py3-none-any.whl
+python3.8 -m venv .venv_install
+. .venv_install/bin/activate
+python -m pip install dist/pwsync-0.1b5-py3-none-any.whl
 which pwsync
 pwsync --from demo/from.kdbx --to demo/to.kdbx
 deactivate
-rm -rf .venv_install_check
+rm -rf .venv_install
 
 # finally upload
 python -m twine upload --repository testpypi dist/*
