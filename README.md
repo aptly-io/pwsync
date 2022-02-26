@@ -67,6 +67,11 @@ pwsync -h
 This tool and its installation description can be found
 [here](https://bitwarden.com/help/article/cli/#download-and-install).
 
+Take care, version 1.21.1 regressed from 1.19.1. Use the latter!
+```bash
+npm install -g  @bitwarden/cli@1.19.1
+```
+
 ```bash
 # get git, python (here version 3.8) and build tools
 sudo apt install -y --upgrade git build-essential python3.8-venv python3.8-dev
@@ -88,7 +93,7 @@ python -m pip install --upgrade pip setuptools build
 Install the script and try-out the installation with the command command shown in Usage.
 
 ```bash
-python3 -m pip install .
+python -m pip install .
 ```
 
 ### As developer
@@ -113,8 +118,9 @@ python -m pylama pwsync/*.py
 
 # tests with an xml coverage report for pwsync 
 # the test_bwc requires an online account; provide the credentials in env. vars.
-export TEST_BW_USERNAME=...
-export TEST_BW_PASSWORD=...
+export TEST_BW_CLIENT_ID=
+export TEST_BW_CLIENT_SECRET=
+export TEST_BW_MASTER_PASSWORD=
 python -m pytest -s -vvv --cov=pwsync --cov-report=xml:cov.xml tests || echo "FAILED"
 
 # for distribution

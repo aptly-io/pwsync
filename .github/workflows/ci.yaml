@@ -21,8 +21,17 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev
-          sudo snap install bw
+          sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev curl
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+          nvm install 14.4.0
+          npm install -g npm@7.24.2
+          npm --version
+          npm i @bitwarden/cli@1.19.1
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
+          bw --version
           python --version
           python -m pip install --upgrade pip setuptools
           python -m pip install .[dev]
@@ -30,7 +39,6 @@ jobs:
           python -m pip install .
           echo "CWD: $PWD"
           mkdir bw-data
-          ls -al
 
       - name: Linting pylama (forced succeed)
         run: python -m pylama pwsync tests || exit 0
@@ -44,4 +52,6 @@ jobs:
           TEST_BW_CLIENT_SECRET: ${{ secrets.TEST_BW_CLIENT_SECRET }}
           TEST_BW_MASTER_PASSWORD:  ${{ secrets.TEST_BW_MASTER_PASSWORD }}
           BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
-        run: python -m pytest -s -vvv --cov=pwsync --cov-report=term tests
+        run: |
+          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
+          python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests

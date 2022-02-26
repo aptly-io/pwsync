@@ -2,9 +2,12 @@
     "editor.rulers": [120],
 
     "editor.formatOnType": true,
-    "editor.formatOnPaste": true,
-    "python.formatting.provider": "black",
     "editor.formatOnSaveMode": "modifications",
+    "python.formatting.provider": "black",
+    "[python]": {
+        "editor.formatOnPaste": false,  // prevents popup black does not format selection
+        "editor.formatOnSaveMode": "file",    
+    },
 
     "python.linting.enabled": true,
     "python.linting.pylamaEnabled": true,

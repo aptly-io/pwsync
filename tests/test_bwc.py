@@ -5,6 +5,7 @@
 # pylint: disable=missing-function-docstring
 
 from datetime import datetime, timezone
+from logging import getLogger
 from os import environ
 
 import pytest
@@ -15,6 +16,14 @@ TITLE = "title"
 NAME = "name"
 SECRET = "secret"
 ORGANIZATION_NAME = "organization"
+
+LOGGER_NAME = "pwsync"
+
+
+@pytest.fixture(name="logger", scope="session")
+def _logger():
+    # see pytest logging settings in pytest.ini
+    return getLogger(LOGGER_NAME)
 
 
 @pytest.fixture(name="bwc", scope="session")
@@ -28,8 +37,10 @@ def _bwc():
 
 
 @pytest.fixture(autouse=True)
-def clean_bw_vault(bwc):
-    # is there an alternative to reset the vault?
+def clean_bw_vault(bwc, logger):
+    logger.debug("Purge vault")
+    # is there an alternative to purge the vault?
+    # pylint: disable=protected-access
     for obj in bwc._list_objects():
         bwc._delete_object(obj["id"])
     for folder in bwc._list_objects("folders"):
@@ -41,6 +52,7 @@ def clean_bw_vault(bwc):
     for collection in bwc._list_objects("org-collections", None, organization_uuid):
         bwc._delete_object(collection["id"], "org-collection", organization_uuid)
     # TODO how to delete "organizations"?
+    # pylint: enable=protected-access
 
 
 def test_no_items(bwc):

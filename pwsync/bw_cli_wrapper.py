@@ -15,8 +15,10 @@
 import json
 import os
 from base64 import b64encode
+from functools import wraps
 from logging import getLogger
-from subprocess import call, check_call, check_output
+from subprocess import CalledProcessError, call, check_call, check_output
+from time import time
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -33,6 +35,10 @@ from .common import (
 )
 from .database_cli import PwsDatabaseClient
 from .item import PwsItem
+
+# Bitwarden client 1.21.1 on MacOs has an issue with bw list items
+# (https://github.com/bitwarden/cli/issues/490)
+BW_SUPPORTED_VERSION = "1.19.1"
 
 # Item Types. Used with the create command to specify a Vault item type:
 USER_TYPE = 1  # a login item (has inside a login sub-type)
@@ -118,6 +124,32 @@ LOGIN_SUBTYPE = 0
 # It is not clear how to access items though ...
 
 
+def eet(fun):
+    """Trace enter and exit of callable with timing"""
+
+    @wraps(fun)
+    def wrapper(*args, **kwargs):
+        logger = getLogger(LOGGER_NAME)
+
+        logger.debug("ENT %s", fun.__name__)
+
+        start = time()
+        out = fun(*args, **kwargs)
+        duration = time() - start
+
+        if duration < 1e-03:
+            duration = f"{int(duration*1000000)}us"
+        elif duration < 1:
+            duration = f"{int(duration*1000)}ms"
+        else:
+            duration = f"{int(duration)}s"
+
+        logger.debug("FIN %s", f"{fun.__name__} : {duration}")
+        return out
+
+    return wrapper
+
+
 def _check_fields_for_sync(field: Dict[str, str]) -> bool:
     if PWS_SYNC == field.get("name"):
         return to_bool(field.get("value", "false"))
@@ -151,46 +183,83 @@ class BitwardenClientWrapper(PwsDatabaseClient):
 
         self._make_session(client_id, client_secret, master_password)
 
+    @eet
     def _check_output(
         self,
         cmd: List[str],
         input_value=None,
     ):
-        result_json = check_output(cmd, input=input_value, env=self._env)
-        return json.loads(result_json)
+        try:
+            result_json = check_output(cmd, input=input_value, env=self._env)
+            self._logger.debug("cmd: %s, result: %s", cmd, result_json)
+            return json.loads(result_json)
+        except CalledProcessError as exc:
+            result_json = f"ret: {exc.returncode}, stdout: {exc.output}, stderr: {exc.stderr}"
+            self._logger.error("cmd: %s, result: %s", cmd, result_json)
+            raise exc
 
+    @eet
+    def _get_status(self):
+        version = check_output(["bw", "--version"]).strip().decode("utf-8")
+        status_obj = self._check_output(["bw", "--raw", "status"])
+        status = status_obj.get("status", "unauthenticated")  # locked, unlocked, unauthenticated
+        user_id = status_obj.get("userId", "")
+        return (status, user_id, version)
+
+    @eet
+    def _sync(self):
+        cmd = ["bw", "sync"]  # --force
+        result = check_output(cmd, env=self._env).strip().decode("utf-8")
+        self._logger.debug("cmd: %s, result: %s", cmd, result)
+
+    @eet
     def _make_session(
         self,
         client_id: str,
         client_secret: str,
         master_password: str,
     ):
-        self.logout()
+        status, user_id, version = self._get_status()
 
-        if client_id:
-            self._env["BW_CLIENTID"] = client_id
-        if client_secret:
-            self._env["BW_CLIENTSECRET"] = client_secret
-        check_call(["bw", "--raw", "login", "--apikey"], env=self._env)
-        self._env.pop("BW_CLIENTID", None)
-        self._env.pop("BW_CLIENTSECRET", None)
+        if version != BW_SUPPORTED_VERSION:
+            raise PwsUnsupported(f"Use bitwareden-cli {BW_SUPPORTED_VERSION}. {version} is not supported!")
 
-        unlock_command = ["bw", "--raw", "unlock"]
-        if master_password:
-            self._env["BW_MASTER_PASSWORD"] = master_password
-            unlock_command.append("--passwordenv=BW_MASTER_PASSWORD")
+        if client_id != f"user.{user_id}" and status != "unauthenticated":
+            self.logout()
+            status = "unauthenticated"
 
-        session = check_output(unlock_command, env=self._env)
-        self._env.pop("BW_MASTER_PASSWORD", None)
-        self._env.update(BW_SESSION=session.decode("utf-8"))
+        if status == "unauthenticated":
+            if client_id:
+                self._env["BW_CLIENTID"] = client_id
+            if client_secret:
+                self._env["BW_CLIENTSECRET"] = client_secret
+            try:
+                check_call(["bw", "--raw", "login", "--apikey"], env=self._env)
+            finally:
+                self._env.pop("BW_CLIENTID", None)
+                self._env.pop("BW_CLIENTSECRET", None)
+            status = "locked"
 
+        if status == "locked":
+            unlock_command = ["bw", "--raw", "unlock"]
+            if master_password:
+                self._env["BW_MASTER_PASSWORD"] = master_password
+                unlock_command.append("--passwordenv=BW_MASTER_PASSWORD")
+            try:
+                session = check_output(unlock_command, env=self._env).strip().decode("utf-8")
+                self._logger.debug("cmd: %s", unlock_command)
+                self._env.update(BW_SESSION=session)
+                self._sync()
+            finally:
+                self._env.pop("BW_MASTER_PASSWORD", None)
+
+    @eet
     def _list_objects(
         self,
         kind: str = "items",
         match: Optional[str] = None,
         organization_uuid: Optional[str] = None,
     ) -> List[Dict]:
-        check_call(["bw", "sync", "--quiet"], env=self._env)
         if match:
             cmd = ["bw", "--raw", "list", kind, "--search", match]
         else:
@@ -199,15 +268,16 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             cmd += ["--organizationid", organization_uuid]
         return list(self._check_output(cmd))
 
+    @eet
     def _get_object(
         self,
         uuid: str,
         kind: str = "item",
     ) -> Optional[Dict]:
-        check_call(["bw", "sync", "--quiet"], env=self._env)
         obj = self._check_output(["bw", "--raw", "get", kind, uuid])
         return obj
 
+    @eet
     def _get_object_name(
         self,
         uuid: Optional[str],
@@ -218,6 +288,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         obj = self._get_object(uuid, kind)
         return None if obj is None else obj.get("name")
 
+    @eet
     def _create_object(
         self,
         obj: Dict,
@@ -231,6 +302,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         obj = self._check_output(cmd, object_json)
         return obj
 
+    @eet
     def _edit_object(
         self,
         uuid: str,
@@ -246,6 +318,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         update = self._check_output(cmd, object_json)
         return update
 
+    @eet
     def _delete_object(
         self,
         uuid: str,
@@ -257,6 +330,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             cmd += ["--organizationid", organization_uuid]
         check_call(cmd, env=self._env)
 
+    @eet
     def _find_uuid(
         self,
         name: Optional[str],
@@ -279,6 +353,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
 
         return uuids[0] if uuids else None
 
+    @eet
     def _find_folder_uuid(
         self,
         folder: Optional[str],
@@ -293,6 +368,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     ) -> Optional[str]:
         return self._find_uuid(org, "organization", create=False)
 
+    @eet
     def _find_collection_uuid(
         self,
         collection: Optional[str],
@@ -301,6 +377,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     ) -> Optional[str]:
         return self._find_uuid(collection, "org-collection", create, organization_uuid)
 
+    @eet
     def _object2item(
         self,
         obj: Dict,
@@ -359,6 +436,7 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         )
         # pylint: enable=too-many-locals
 
+    @eet
     def _prevent_duplicates(
         self,
         new_item: PwsItem,
@@ -389,12 +467,15 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             if match_cnt == len(self._key_ids):
                 raise PwsDuplicate()
 
+    @eet
     def logout(self):
         """Lock and logout from the online Bitwarden password database"""
         getLogger("pwsync").info("logout!")
+        self._env.pop("BW_SESSION", None)
         call(["bw", "--quiet", "lock"])  # ignore failures (e.g. locked already?)
         call(["bw", "--quiet", "logout"])  # ignore failures (e.g. already out?)
 
+    @eet
     def create(
         self,
         item: PwsItem,
@@ -451,23 +532,30 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             "identity": None,
         }
         new_obj = self._create_object(obj)
+        self._sync()
         new_item = self._object2item(new_obj)
 
         return new_item
 
+    @eet
     def read(
         self,
         key: Optional[Key] = None,
         sync_flag: Optional[bool] = None,
     ) -> List[PwsItem]:
         """reads Bitwarden object(s) with given optional key and sync flag"""
-        objects = self._list_objects() if key is None else [self._get_object(_key2uuid(key))]
+        if key is None:
+            objects = self._list_objects()
+        else:
+            obj = self._get_object(_key2uuid(key))
+            objects = [] if obj is None else [obj]
 
         if sync_flag:
             return [self._object2item(o) for o in objects if _has_sync(o)]
 
         return [self._object2item(o) for o in objects]
 
+    @eet
     def update(
         self,
         key: Key,
@@ -531,9 +619,11 @@ class BitwardenClientWrapper(PwsDatabaseClient):
         # pylint: enable=too-many-branches
 
         updated_object = self._edit_object(uuid_str, obj, kind="item")
+        self._sync()
         updated_item = self._object2item(updated_object)
         return updated_item
 
+    @eet
     def delete(
         self,
         key: Key,
