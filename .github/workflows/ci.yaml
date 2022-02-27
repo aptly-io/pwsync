@@ -23,20 +23,7 @@ jobs:
           sudo apt update
           sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev curl
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-# reuse the bw snap installation
           sudo snap install bw
-          # export NVM_DIR="$HOME/.nvm"
-          # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-          # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-          # # nvm install 14.4.0
-          # # npm install -g npm@7.24.2
-          # # npm --version
-          # # npm i @bitwarden/cli@1.19.1
-          # nvm install 16
-          # npm install -g npm@7.24.2
-          # npm --version
-          # npm i @bitwarden/cli@1.19.1
-          # PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           bw --version
           python --version
           python -m pip install --upgrade pip setuptools
@@ -47,19 +34,6 @@ jobs:
           deactivate
           mkdir bw-data
 
-# disable linting temporary
-      # - name: Linting with pylama (does a forced succeed!)
-      #   run: |
-      #     . .venv_dev/bin/activate
-      #     python -m pylama pwsync tests ||:
-      #     deactivate
-
-      # - name: Linting with pylint
-      #   run: |
-      #     . .venv_dev/bin/activate
-      #     python -m pylint pwsync tests
-      #     deactivate
-
       - name: Run unit tests
         env:
           TEST_BW_CLIENT_ID: ${{ secrets.TEST_BW_CLIENT_ID }}
@@ -68,48 +42,5 @@ jobs:
           BITWARDENCLI_APPDATA_DIR: "/home/runner/work/pwsync/pwsync/bw-data"
         run: |
           . .venv_dev/bin/activate
-          PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           python -m pytest -s -vvv --durations=0 --cov=pwsync --cov-report=term tests/test_bwc.py
           deactivate
-
-# disable package building temporary
-      # - name: Build package
-      #   run: |
-      #     python -m venv .venv_build
-      #     . .venv_build/bin/activate
-      #     python -m pip install --upgrade pip setuptools
-      #     python -m pip install .[build]
-      #     python -m pip install .
-      #     python -m build
-      #     WHL_PKG_NAME=`ls -t -1 dist/ | head -1`
-      #     twine check --strict dist/$WHL_PKG_NAME
-      #     deactivate
-
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Source distribution package
-      #     path: dist/pwsync-*.tar.gz
-      #     if-no-files-found: error
-
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Install distribution package
-      #     path: dist/pwsync-*.whl
-      #     if-no-files-found: error
-
-      # - name: Run a simple integration test
-      #   env:
-      #     PWS_FROM_MASTER_PASSWORD: pw
-      #     PWS_TO_MASTER_PASSWORD: pw
-      #   run: |
-      #     python -m venv .venv_install
-      #     . .venv_install/bin/activate
-      #     WHL_PKG_NAME=`ls -t -1 dist | head -1`
-      #     python -m pip install dist/$WHL_PKG_NAME
-      #     PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
-      #     which pwsync
-      #     pwsync -h
-      #     pwsync -v
-      #     pwsync -d -f demo/from.kdbx -t demo/to.kdbx
-      #     # TODO real run fails on the delete waiting for user input
-      #     #pwsync -f demo/from.kdbx -t demo/to.kdbx
