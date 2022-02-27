@@ -104,7 +104,7 @@ def test_read_one_only_title_name_secret(bwc):
     # assert created_item.get_mtime() == read_item.get_mtime()
 
 
-def test_create_only_title_name_secret_path(bwc):
+def test_create_only_title_name_secret_path(bwc, logger):
     folder = "path1/path1_1"
     i = bwc.create(PwsItem(TITLE, NAME, SECRET, folder))
     assert TITLE == i.title
@@ -113,6 +113,26 @@ def test_create_only_title_name_secret_path(bwc):
     assert folder == i.folder
     assert i.note is None
     assert i.url is None
+    logger.debug(f"##### i: {i}")
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+    for itm in read_item:
+        logger.debug(f"##### itm: {itm}")
+    logger.debug(f"##### bwc.read(i.key): {bwc.read(i.key)}")
+
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+    read_item = bwc.read()
+    logger.debug(f"##### r: {read_item}, {len(read_item)}")
+
     assert len(bwc.read()) == 1
     assert i == bwc.read()[0]
     assert i == bwc.read(i.key)[0]
