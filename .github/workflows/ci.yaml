@@ -25,6 +25,7 @@ jobs:
           sudo apt update
           sudo apt-get install -y --upgrade git build-essential python${{ matrix.python-version }}-venv python${{ matrix.python-version }}-dev curl
           sudo snap install bw
+          mkdir -p $BITWARDENCLI_APPDATA_DIR
           bw --version
           python --version
           python -m pip install --upgrade pip setuptools
@@ -33,7 +34,6 @@ jobs:
           python -m pip install .[dev]
           python -m pip install .
           deactivate
-          mkdir bw-data
 
       - name: Run unit tests
         env:
