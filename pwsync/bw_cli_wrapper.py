@@ -38,7 +38,7 @@ from .item import PwsItem
 
 # Bitwarden client 1.21.1 on MacOs has an issue with bw list items
 # (https://github.com/bitwarden/cli/issues/490)
-BW_SUPPORTED_VERSION = "1.19.1"
+BW_SUPPORTED_VERSION = "1.21.1"
 
 # Item Types. Used with the create command to specify a Vault item type:
 USER_TYPE = 1  # a login item (has inside a login sub-type)
