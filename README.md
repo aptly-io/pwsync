@@ -11,15 +11,15 @@
 _pwsync_ is a low level command line tool that synchronizes _password databases_.
 
 `pwsync` grew from a personal need to simplify credential usage for online services
-(e.g. for web shops, banks, cloud services, ...) 
+(e.g. for web shops, banks, cloud services, ...)
 on different platforms (Ubuntu, iPad, Android mobile, ...).
-Keepass feels outdated for such use-cases. 
+Keepass feels outdated for such use-cases.
 Bitwarden (and alikes) simplify authentication thanks to its
 [browser extension](https://bitwarden.com/help/article/getting-started-browserext/).
-Due to the personal use case, `pwsync` only supports 
+Due to the personal use case, `pwsync` only supports
 [_Keepass_](https://keepass.info/) database files
 and [_Bitwarden_](https://bitwarden.com/) online database.
-But anybody can add support for other cloud password services 
+But anybody can add support for other cloud password services
 if their (public) REST API is known with a Pull Request.
 
 These properties of the password database features are handled (the _lowest common denominator_):
@@ -38,7 +38,7 @@ These properties of the password database features are handled (the _lowest comm
   (Keepass keeps this in its attributes property as _pws_sync_)
 
 Support for fields, icons, expiration date, the automatic creation of organizations,
-changes on a credential's collection set, Bitwarden's reprompt, 
+changes on a credential's collection set, Bitwarden's reprompt,
 Bitwarden's multiple urls and matching patterns, privately hosted Bitwarden etc.
 _is currently missing_!
 
@@ -68,8 +68,6 @@ pwsync -h
 This tool and its installation description can be found
 [here](https://bitwarden.com/help/article/cli/#download-and-install).
 
-Take care! The Bitwarden-cli version 1.21.1 regressed since 1.19.1. 
-Find the issue here: https://github.com/bitwarden/cli/issues/490. So use version 1.19.1!
 ```bash
 npm install -g  @bitwarden/cli@1.19.1
 ```
@@ -121,7 +119,7 @@ python -m black pwsync/*.py tests/*.py
 python -m pylint pwsync tests || echo "FAILED"
 python -m pylama pwsync/*.py
 
-# tests with an xml coverage report for pwsync 
+# tests with an xml coverage report for pwsync
 # the test_bwc requires an online account; provide the credentials in env. vars.
 export TEST_BW_CLIENT_ID=
 export TEST_BW_CLIENT_SECRET=
@@ -133,7 +131,7 @@ python -m pytest -s -vvv --cov=pwsync --cov-report=xml:cov.xml tests || echo "FA
 python -m build
 
 # upload on testpypi
-twine check dist/* # basic check
+twine check --strict dist/* # basic check
 
 # do a minimal test of the package in a new venv
 deactivate
