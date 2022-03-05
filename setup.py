@@ -13,7 +13,7 @@ with open("README.md", "r", encoding="utf-8") as fp:
 setup(
     name="pwsync",
     license="GPL3",
-    license_files=('LICENSE',),
+    license_files=("LICENSE",),
     author="Francis Meyvis",
     author_email="pwsync@mikmak.fun",
     description="Synchronize password databases",
@@ -35,7 +35,7 @@ setup(
     install_requires=[
         "pykeepass==4.0.1",
         "diffsync==1.4.2",
-        "prompt-toolkit==3.0.28"
+        "prompt-toolkit==3.0.28",
     ],
     extras_require={
         "dev": [
@@ -47,13 +47,14 @@ setup(
             "pytz",
             "types-python-dateutil",
             "types-pytz",
+            "pre-commit",
         ],
         "build": [
             "setuptools>=45.0",
             "wheel",
             "build",
-            "twine"
-        ]
+            "twine",
+        ],
     },
     entry_points={
         "console_scripts": ["pwsync=pwsync.main:main"],
