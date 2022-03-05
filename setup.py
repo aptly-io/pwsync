@@ -47,6 +47,7 @@ setup(
             "pytz",
             "types-python-dateutil",
             "types-pytz",
+            "pre-commit",
         ],
         "build": [
             "setuptools>=45.0",

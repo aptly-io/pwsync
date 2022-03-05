@@ -106,15 +106,18 @@ python -m pip install --upgrade -e .[dev]
 
 # and/or with tools for building a distribution
 python -m pip install --upgrade .[build]
+
+# install a git pre-commit hooks according to .pre-commit-config.yaml
+pre-commit install
 ```
 
 ### Development
 
 ```bash
-# format the source code (configuration in pyproject.toml)
+# format the source code (configuration in pyproject.toml) (done by pre-commit hook)
 python -m black pwsync/*.py tests/*.py
 
-# linting and source code analysis
+# linting and source code analysis (ran in pre-commit hook)
 python -m pylint pwsync tests || echo "FAILED"
 python -m pylama pwsync/*.py
 
