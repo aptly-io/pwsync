@@ -34,9 +34,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pykeepass==4.0.1",
-        "diffsync==1.4.1",
-        "prompt-toolkit==3.0.28",
-        "packaging==21.3"
+        "diffsync==1.4.2",
+        "prompt-toolkit==3.0.28"
     ],
     extras_require={
         "dev": [
