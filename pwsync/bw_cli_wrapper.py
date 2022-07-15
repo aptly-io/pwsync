@@ -194,7 +194,9 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             self._logger.debug("cmd: %s, result: %s", cmd, result_json)
             return json.loads(result_json)
         except CalledProcessError as exc:
-            result_json = f"ret: {exc.returncode}, stdout: {exc.output}, stderr: {exc.stderr}"
+            out = exc.stdout.decode("utf-8") if exc.stdout is not None else "''"
+            err = exc.stderr.decode("utf-8") if exc.stderr is not None else "''"
+            result_json = f"ret: {exc.returncode}, stdout: {out}, stderr: {err}"
             self._logger.error("cmd: %s, result: %s", cmd, result_json)
             raise exc
 
