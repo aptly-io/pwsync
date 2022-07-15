@@ -173,6 +173,7 @@ causes a create/delete modification!
 To synchronize, `pwsync` depends on:
 - The python [_diffsync_](https://pypi.org/project/diffsync/) module: determines the differences between two password databases.
 - The python [_pykeepass_](https://pypi.org/project/pykeepass/) module: modifies a Keepass_ file.
+- The python [_prompt-toolkit_](https://pypi.org/project/prompt-toolkit/) module
 - Bitwarden's official(?) [_command line client_](https://bitwarden.com/help/article/cli/): modifies a Bitwarden online password database.
 
 An curated dump of the console output is shown below:
