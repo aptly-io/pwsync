@@ -1,3 +1,6 @@
+node_modules/
+package-lock.json
+package.json
 __pycache__/
 .venv/
 .venv_install_check/

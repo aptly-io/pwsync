@@ -69,7 +69,7 @@ This tool and its installation description can be found
 [here](https://bitwarden.com/help/article/cli/#download-and-install).
 
 ```bash
-npm install -g  @bitwarden/cli@1.19.1
+npm install -g  @bitwarden/cli
 ```
 
 ```bash
@@ -125,6 +125,9 @@ export TEST_BW_CLIENT_ID=
 export TEST_BW_CLIENT_SECRET=
 export TEST_BW_MASTER_PASSWORD=
 python -m pytest -s -vvv --cov=pwsync --cov-report=xml:cov.xml tests || echo "FAILED"
+
+# or run a specific individual test
+python -m pytest -s -vvv tests/test_bwc.py -k test_create_one_collection
 
 # for distribution
 # for the proper version to be generated, use the main branch with a tag like v0.1b5
