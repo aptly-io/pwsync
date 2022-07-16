@@ -26,10 +26,9 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-          nvm install 14.4.0
-          npm install -g npm@7.24.2
+          nvm install 18.6.0
           npm --version
-          npm i @bitwarden/cli@1.19.1
+          npm i @bitwarden/cli
           PATH=$PATH:$GITHUB_WORKSPACE/node_modules/.bin
           bw --version
           python --version

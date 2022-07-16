@@ -38,7 +38,7 @@ from .item import PwsItem
 
 # Bitwarden client 1.21.1 on MacOs has an issue with bw list items
 # (https://github.com/bitwarden/cli/issues/490)
-BW_SUPPORTED_VERSION = "1.19.1"
+BW_SUPPORTED_VERSION_MAJOR = 2022
 
 # Item Types. Used with the create command to specify a Vault item type:
 USER_TYPE = 1  # a login item (has inside a login sub-type)
@@ -194,13 +194,15 @@ class BitwardenClientWrapper(PwsDatabaseClient):
             self._logger.debug("cmd: %s, result: %s", cmd, result_json)
             return json.loads(result_json)
         except CalledProcessError as exc:
-            result_json = f"ret: {exc.returncode}, stdout: {exc.output}, stderr: {exc.stderr}"
+            out = exc.stdout.decode("utf-8") if exc.stdout is not None else "''"
+            err = exc.stderr.decode("utf-8") if exc.stderr is not None else "''"
+            result_json = f"ret: {exc.returncode}, stdout: {out}, stderr: {err}"
             self._logger.error("cmd: %s, result: %s", cmd, result_json)
             raise exc
 
     @eet
     def _get_status(self):
-        version = check_output(["bw", "--version"]).strip().decode("utf-8")
+        version = tuple(map(int, check_output(["bw", "--version"]).strip().decode("utf-8").split(".")))
         status_obj = self._check_output(["bw", "--raw", "status"])
         status = status_obj.get("status", "unauthenticated")  # locked, unlocked, unauthenticated
         user_id = status_obj.get("userId", "")
@@ -221,8 +223,8 @@ class BitwardenClientWrapper(PwsDatabaseClient):
     ):
         status, user_id, version = self._get_status()
 
-        if version != BW_SUPPORTED_VERSION:
-            raise PwsUnsupported(f"Use bitwareden-cli {BW_SUPPORTED_VERSION}. {version} is not supported!")
+        if version[0] < BW_SUPPORTED_VERSION_MAJOR:
+            raise PwsUnsupported(f"Use bitwareden-cli {BW_SUPPORTED_VERSION_MAJOR}. {version} is not supported!")
 
         if client_id != f"user.{user_id}" and status != "unauthenticated":
             self.logout()

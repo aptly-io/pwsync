@@ -36,40 +36,32 @@ LOGGER = getLogger(LOGGER_NAME + "-test")
 
 @pytest.fixture(name="cli1")
 def _cli1():
-    LOGGER.info("Setup cli1")
     try:
         remove(KP1_FILENAME)
     except FileNotFoundError:
         pass  # maybe file did not exist
     cli = KeepassDatabaseClient(KP1_FILENAME, KP1_PW)
     yield cli
-    LOGGER.info("Teardown cli1")
 
 
 @pytest.fixture(name="ds1")
 def _ds1(cli1):
-    LOGGER.info("Setup ds1")
     yield PasswordDataset(KP1_FILENAME, QUERY_INFO, cli1)
-    LOGGER.info("Teardown ds1")
 
 
 @pytest.fixture(name="cli2")
 def _cli2():
-    LOGGER.info("Setup cli2")
     try:
         remove(KP2_FILENAME)
     except FileNotFoundError:
         pass  # maybe file did not exist
     cli = KeepassDatabaseClient(KP2_FILENAME, KP2_PW)
     yield cli
-    LOGGER.info("Teardown cli2")
 
 
 @pytest.fixture(name="ds2")
 def _ds2(cli2):
-    LOGGER.info("Setup ds2")
     yield PasswordDataset(KP1_FILENAME, QUERY_INFO, cli2)
-    LOGGER.info("Teardown ds2")
 
 
 @pytest.fixture(name="sync")

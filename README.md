@@ -69,7 +69,7 @@ This tool and its installation description can be found
 [here](https://bitwarden.com/help/article/cli/#download-and-install).
 
 ```bash
-npm install -g  @bitwarden/cli@1.19.1
+npm install -g  @bitwarden/cli
 ```
 
 ```bash
@@ -126,6 +126,9 @@ export TEST_BW_CLIENT_SECRET=
 export TEST_BW_MASTER_PASSWORD=
 python -m pytest -s -vvv --cov=pwsync --cov-report=xml:cov.xml tests || echo "FAILED"
 
+# or run a specific individual test
+python -m pytest -s -vvv tests/test_bwc.py -k test_create_one_collection
+
 # for distribution
 # for the proper version to be generated, use the main branch with a tag like v0.1b5
 python -m build
@@ -173,6 +176,7 @@ causes a create/delete modification!
 To synchronize, `pwsync` depends on:
 - The python [_diffsync_](https://pypi.org/project/diffsync/) module: determines the differences between two password databases.
 - The python [_pykeepass_](https://pypi.org/project/pykeepass/) module: modifies a Keepass_ file.
+- The python [_prompt-toolkit_](https://pypi.org/project/prompt-toolkit/) module
 - Bitwarden's official(?) [_command line client_](https://bitwarden.com/help/article/cli/): modifies a Bitwarden online password database.
 
 An curated dump of the console output is shown below:
