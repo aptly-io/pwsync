@@ -1,9 +1,10 @@
-# Copyright 2022 Francis Meyvis (pwsync@mikmak.fun)
+# Copyright 2022, 2023 Francis Meyvis (pwsync@mikmak.fun)
 
 """interactive synchronize using the console"""
 
 import sys
 from difflib import SequenceMatcher
+from os.path import join
 from typing import List, Optional
 
 from prompt_toolkit import HTML
@@ -184,6 +185,22 @@ def _sync_element(kind: str, element: PwsDiffElement, to_db: PwsDatabaseClient):
         raise PwsUnsupported(f"_sync_element({kind})")
 
 
+def _match_selector(selector, item: Optional[PwsItem]) -> bool:
+    if item is None:
+        return False
+    path = join(item.folder if item.folder is not None else "", item.title)
+    return selector.fullmatch(path) is not None
+
+
+def _match_selectors(selectors, element):
+    for selector in selectors:
+        if _match_selector(selector, element.from_item):
+            return True
+        if _match_selector(selector, element.to_item):
+            return True
+    return False  # non-matching element skipped
+
+
 def _sync_section(
     kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset
 ):
@@ -215,11 +232,16 @@ def _sync_section(
     elif kind == "unchanged":
         return  # TODO handle skipped
 
-    print_ft(HTML(_markup(f"To {kind}: {len(data)}", "info")), style=STYLE)
+    if query_info.filters:
+        filtered_data = list(filter(lambda e: _match_selectors(query_info.filters, e), data))
+    else:
+        filtered_data = data
+
+    print_ft(HTML(_markup(f"To {kind}: {len(filtered_data)}", "info")), style=STYLE)
 
     section_folder = ""
     count = 0
-    for element in sorted(data, key=key_getter):
+    for element in sorted(filtered_data, key=key_getter):
         count += 1
         section_folder = _print_ft_element(
             count, query_info, section_folder, getattr(element, props_name), element.from_item, element.to_item
