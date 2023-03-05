@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-# Copyright 2022 Francis Meyvis (pwsync@mikmak.fun)
+# Copyright 2022, 2023 Francis Meyvis (pwsync@mikmak.fun)
 
 """ password sync's entry point"""
 
+import re
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from dataclasses import dataclass
 from getpass import getpass
@@ -125,6 +126,15 @@ def _parse_command_line():
         + "or stored in the shell history buffer, etc. If left empty, it is prompted for on the command line",
     )
 
+    parser.add_argument(
+        "-s",
+        "--select",
+        action="append",
+        nargs="*",
+        default=[],
+        help="Select the items to sync by matching their folder/title value with the regular expression.",
+    )
+
     parser.add_argument("-U", "--auto-update", action="store_true", help="automatically update all entries")
     parser.add_argument("-C", "--auto-create", action="store_true", help="automatically create all entries")
 
@@ -211,7 +221,8 @@ def main():
     logger.addHandler(file_handler)
     logger.propagate = False  # do not further propagate to the root handler (stdout)
 
-    query_info = PwsQueryInfo(args.id.split(","), args.id_sep, args.sync)
+    filters = list(map(re.compile, map(lambda i: i[0], args.select)))
+    query_info = PwsQueryInfo(args.id.split(","), args.id_sep, args.sync, filters)
 
     access = _AccessInfo(args.from_username, args.from_secret, args.from_master_password)
     from_dataset = _open_password_db(query_info, "from", getattr(args, "from"), access)

@@ -58,6 +58,12 @@ pwsync --from demo/from.kdbx --to bitwarden
 # see below for an example of typical output.
 pwsync --from demo/from.kdbx --to demo/to.kdbx
 
+# Do a dry-run (-d) for syncing all (-a) items that match the selection (-s)
+# Item's are matched based on the concatenation of their <folder-value> '/' <title-value>
+python -mpwsync.main -d -f demo/from.kdbx -t demo/to.kdbx -a \
+  -s ".*/folder 1.1/.*" -s "folder 2/.*" \
+  --from-master-password=pw --to-master-password=pw
+
 # a description of all options
 pwsync -h
 ```
@@ -198,4 +204,4 @@ An curated dump of the console output is shown below:
 
 `pwsync` is necessarily GPL3 since it (currently) depends upon the GPL3 python module `pykeepass`.
 
-Copyright 2022 Francis Meyvis (pwsync@mikmak.fun)
+Copyright 2022, 2023 Francis Meyvis (pwsync@mikmak.fun)

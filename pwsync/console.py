@@ -1,9 +1,10 @@
-# Copyright 2022 Francis Meyvis (pwsync@mikmak.fun)
+# Copyright 2022, 2023 Francis Meyvis (pwsync@mikmak.fun)
 
 """interactive synchronize using the console"""
 
 import sys
 from difflib import SequenceMatcher
+from os.path import join
 from typing import List, Optional
 
 from prompt_toolkit import HTML
@@ -184,9 +185,23 @@ def _sync_element(kind: str, element: PwsDiffElement, to_db: PwsDatabaseClient):
         raise PwsUnsupported(f"_sync_element({kind})")
 
 
-def _sync_section(
-    kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset
-):
+def _match_selector(selector, item: Optional[PwsItem]) -> bool:
+    if item is None:
+        return False
+    path = join(item.folder if item.folder is not None else "", item.title)
+    return selector.fullmatch(path) is not None
+
+
+def _match_selectors(selectors, element):
+    for selector in selectors:
+        if _match_selector(selector, element.from_item):
+            return True
+        if _match_selector(selector, element.to_item):
+            return True
+    return False  # non-matching element skipped
+
+
+def _switch_kind(kind: str, query_info: PwsQueryInfo, syncer):
     def _get_key_using_from_item(diff_element: PwsDiffElement):
         return diff_element.from_item.make_id(query_info) if diff_element.from_item else ""
 
@@ -211,14 +226,28 @@ def _sync_section(
         key_getter = _get_key_using_from_item
         props_name = "add_props"
     elif kind == "skipped":
-        return  # TODO handle skipped
+        raise NotImplementedError("kind 'skipped' not handled")
     elif kind == "unchanged":
-        return  # TODO handle skipped
+        raise NotImplementedError("kind 'unchanged' not handled")
+
+    if query_info.filters:
+        filtered_data = list(filter(lambda e: _match_selectors(query_info.filters, e), data))
+    else:
+        filtered_data = data
+
+    return filtered_data, key_getter, props_name
+
+
+def _sync_section(
+    kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset
+):
+    data, key_getter, props_name = _switch_kind(kind, query_info, syncer)
 
     print_ft(HTML(_markup(f"To {kind}: {len(data)}", "info")), style=STYLE)
 
     section_folder = ""
     count = 0
+
     for element in sorted(data, key=key_getter):
         count += 1
         section_folder = _print_ft_element(
@@ -249,5 +278,5 @@ def console_sync(query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOp
     _sync_section("update", query_info, syncer, run_options, to_dataset)
     _sync_section("create", query_info, syncer, run_options, to_dataset)
     _sync_section("delete", query_info, syncer, run_options, to_dataset)
-    _sync_section("skipped", query_info, syncer, run_options, to_dataset)
-    _sync_section("unchanged", query_info, syncer, run_options, to_dataset)
+    # _sync_section("skipped", query_info, syncer, run_options, to_dataset)  # TODO handle skipped
+    # _sync_section("unchanged", query_info, syncer, run_options, to_dataset)  # TODO handle unchanged

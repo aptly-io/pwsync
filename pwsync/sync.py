@@ -90,7 +90,7 @@ class PwsSyncer:
             elif diff_element.action == DiffSyncActions.UPDATE:
                 self._update(diff_element)
             else:
-                raise Exception(f"Unexpected action: {diff_element.action}")
+                raise NotImplementedError(f"Unexpected action: {diff_element.action}")
 
         self._logger.info("diff.summary: %s", diff.summary())
         self._logger.debug("self.creates: %s", self.creates)

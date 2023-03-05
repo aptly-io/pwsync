@@ -1,9 +1,9 @@
-# Copyright 2022 Francis Meyvis (pwsync@mikmak.fun)
+# Copyright 2022, 2023 Francis Meyvis (pwsync@mikmak.fun)
 
 """common constants and helper functions"""
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 LOGGER_NAME = "PWSYNC"
 
@@ -57,6 +57,7 @@ class PwsQueryInfo:
     ids: List[str]
     id_sep: str = ":"
     sync: bool = True
+    filters: Optional[List[str]] = None
 
 
 @dataclass
