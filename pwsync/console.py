@@ -201,9 +201,8 @@ def _match_selectors(selectors, element):
     return False  # non-matching element skipped
 
 
-def _sync_section(
-    kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset
-):
+def _switch_kind(kind: str, query_info: PwsQueryInfo, syncer):
+
     def _get_key_using_from_item(diff_element: PwsDiffElement):
         return diff_element.from_item.make_id(query_info) if diff_element.from_item else ""
 
@@ -228,20 +227,29 @@ def _sync_section(
         key_getter = _get_key_using_from_item
         props_name = "add_props"
     elif kind == "skipped":
-        return  # TODO handle skipped
+        raise NotImplementedError("kind 'skipped' not handled")
     elif kind == "unchanged":
-        return  # TODO handle skipped
+        raise NotImplementedError("kind 'unchanged' not handled")
 
     if query_info.filters:
         filtered_data = list(filter(lambda e: _match_selectors(query_info.filters, e), data))
     else:
         filtered_data = data
 
-    print_ft(HTML(_markup(f"To {kind}: {len(filtered_data)}", "info")), style=STYLE)
+    return filtered_data, key_getter, props_name
+
+
+def _sync_section(
+    kind: str, query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOptions, to_dataset: PasswordDataset
+):
+    data, key_getter, props_name = _switch_kind(kind, query_info, syncer)
+
+    print_ft(HTML(_markup(f"To {kind}: {len(data)}", "info")), style=STYLE)
 
     section_folder = ""
     count = 0
-    for element in sorted(filtered_data, key=key_getter):
+
+    for element in sorted(data, key=key_getter):
         count += 1
         section_folder = _print_ft_element(
             count, query_info, section_folder, getattr(element, props_name), element.from_item, element.to_item
@@ -271,5 +279,5 @@ def console_sync(query_info: PwsQueryInfo, syncer: PwsSyncer, run_options: RunOp
     _sync_section("update", query_info, syncer, run_options, to_dataset)
     _sync_section("create", query_info, syncer, run_options, to_dataset)
     _sync_section("delete", query_info, syncer, run_options, to_dataset)
-    _sync_section("skipped", query_info, syncer, run_options, to_dataset)
-    _sync_section("unchanged", query_info, syncer, run_options, to_dataset)
+    # _sync_section("skipped", query_info, syncer, run_options, to_dataset)  # TODO handle skipped
+    # _sync_section("unchanged", query_info, syncer, run_options, to_dataset)  # TODO handle unchanged
