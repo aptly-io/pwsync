@@ -22,7 +22,6 @@ setup(
     url="https://github.com/aptly-io/pwsync",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX :: Linux",  # TODO test on other OSes
@@ -34,8 +33,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pykeepass==4.0.3",
-        "diffsync==1.6.0",
-        "prompt-toolkit==3.0.30",
+        "diffsync==1.7.0",
+        "prompt-toolkit==3.0.38",
     ],
     extras_require={
         "dev": [
