@@ -202,7 +202,6 @@ def _match_selectors(selectors, element):
 
 
 def _switch_kind(kind: str, query_info: PwsQueryInfo, syncer):
-
     def _get_key_using_from_item(diff_element: PwsDiffElement):
         return diff_element.from_item.make_id(query_info) if diff_element.from_item else ""
 
