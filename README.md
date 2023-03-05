@@ -60,7 +60,7 @@ pwsync --from demo/from.kdbx --to demo/to.kdbx
 
 # Do a dry-run (-d) for syncing all (-a) items that match the selection (-s)
 # Item's are matched based on the concatenation of their <folder-value> '/' <title-value>
-pwsync python -mpwsync.main -d -f demo/from.kdbx -t demo/to.kdbx -a \
+python -mpwsync.main -d -f demo/from.kdbx -t demo/to.kdbx -a \
   -s ".*/folder 1.1/.*" -s "folder 2/.*" \
   --from-master-password=pw --to-master-password=pw
 
